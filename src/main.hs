@@ -11,3 +11,6 @@ fill x times  | times == 1 = [x]
 init_table m n x  | m == 1 = [fill x n]
                   | m < 1 =  []
                   | otherwise = [fill x n] ++ init_table (m-1) n x
+
+
+--xh
