@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 import System.Random
 
 toStr :: [Int] -> String
@@ -21,15 +22,24 @@ pprint (r:t) = do
   pprint t
 
 main :: IO ()
-main = let m = 3; n = 3; x = "X"; board = init_board m n x in pprint board
+main = let m = 3; n = 3; x = 'X'; board = init_board m n x in pprint board
 
 clean_perc board =
   let m = length board; n = length $ board!!0 in clean_perc_w board 0 0 0 (m-1) (n-1)
 
 -- clean_perc_w :: [[]]
-clean_perc_w board x y dirty m n  | x == m && y == n && board!!x!!y == "C" = div ((dirty+1)*100) ((m+1)*(n+1))
-clean_perc_w board x y dirty m n  | x == m && y == n = div (dirty*100) ((m+1)*(n+1))
-                                  | y == n && board!!x!!y == "C" = clean_perc_w board (x+1) 0 (dirty+1) m n
-                                  | board!!x!!y == "C" = clean_perc_w board x (y+1) (dirty+1) m n
+clean_perc_w board x y dirty m n  | x == m && y == n && board!!x!!y == 'C' = div ((dirty+1)*100) ((m+1)*(n+1))
+                                  | x == m && y == n = div (dirty*100) ((m+1)*(n+1))
+                                  | y == n && board!!x!!y == 'C' = clean_perc_w board (x+1) 0 (dirty+1) m n
+                                  | board!!x!!y == 'C' = clean_perc_w board x (y+1) (dirty+1) m n
                                   | y == n = clean_perc_w board (x+1) 0 dirty m n
                                   | otherwise = clean_perc_w board x (y+1) dirty m n
+
+
+dirt :: [Char] -> Int
+dirt [] = 0
+dirt ('C':t) = 1 + dirt t
+dirt (_:t) = 0 + dirt t
+
+dirt_perc :: [[Char]] -> Int
+dirt_perc board = let m = length board; n = length board in div ((sum $ map dirt board)*100) (m*n)
