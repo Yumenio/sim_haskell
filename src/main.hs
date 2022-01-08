@@ -45,3 +45,14 @@ dirt_perc :: [[Char]] -> Int
 dirt_perc board = let m = length board; n = length board in div ((sum $ map dirt board)*100) (m*n)
 
 clean_perc board = 100 - (dirt_perc board)
+
+rnd_filter :: Int -> Int
+rnd_filter x = x
+
+rrr :: IO ()
+rrr = do
+  r <- randomRIO(1,100)
+  print $ rnd_filter r
+
+bnr :: IO Int
+bnr = let r = randomRIO(1,100) in r
