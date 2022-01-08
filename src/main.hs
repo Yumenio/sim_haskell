@@ -24,7 +24,7 @@ pprint (r:t) = do
 main :: IO ()
 main = let m = 3; n = 3; x = 'X'; board = init_board m n x in pprint board
 
-clean_perc board =
+clean_perc_d board =
   let m = length board; n = length $ board!!0 in clean_perc_w board 0 0 0 (m-1) (n-1)
 
 -- clean_perc_w :: [[]]
@@ -43,3 +43,5 @@ dirt (_:t) = 0 + dirt t
 
 dirt_perc :: [[Char]] -> Int
 dirt_perc board = let m = length board; n = length board in div ((sum $ map dirt board)*100) (m*n)
+
+clean_perc board = 100 - (dirt_perc board)
