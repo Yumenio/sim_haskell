@@ -16,6 +16,26 @@ init_board m n x  | m == 1 = [fill x n]
                   | otherwise = [fill x n] ++ init_board (m-1) n x
 
 
+-- generateObstacles :: [[Char]] -> [[Char]]
+generateObstacles :: [[Char]] -> IO [[Char]]
+generateObstacles board =
+  let m = length board; n = length $ board!!0; perc = 10; amount = div (m*n*perc) 100 in generateObstaclesAux board amount
+
+-- generateObstaclesAux :: [[Char]] -> Int -> [[Char]]
+generateObstaclesAux :: [[Char]] -> Int -> IO [[Char]]
+generateObstaclesAux board amount | amount == 0 = return board
+                                  | otherwise = do
+                                    let m = length board; n = length $ board!!0
+                                    x_ <- randomRIO (0,(m-1))
+                                    y_ <- randomRIO (0,(n-1))
+                                    -- print x_
+                                    -- print y_
+                                    let x = filterIO x_; y = filterIO y_
+                                    let (head, row:rs) = splitAt x board; (rhead, _:rtail) = splitAt y row; newrow = rhead++['O']++rtail in generateObstaclesAux (head++[newrow]++rs) (amount-1)
+
+filterIO :: Int -> Int
+filterIO x = x
+
 pprint [] = putStrLn ""
 pprint (r:t) = do
   print r
