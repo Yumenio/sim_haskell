@@ -33,6 +33,10 @@ generateObstaclesAux board amount | amount == 0 = return board
                                     let x = filterIO x_; y = filterIO y_
                                     let (head, row:rs) = splitAt x board; (rhead, _:rtail) = splitAt y row; newrow = rhead++['O']++rtail in generateObstaclesAux (head++[newrow]++rs) (amount-1)
 
+genBabyJail :: [[Char]] -> [[Char]]
+genBabyJail board babyCount doneCount = if babyCount == doneCount then board else let (x,y) = getBabyJailIndex board doneCount
+
+
 filterIO :: Int -> Int
 filterIO x = x
 
