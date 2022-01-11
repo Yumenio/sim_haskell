@@ -30,11 +30,14 @@ generateObstaclesAux board amount | amount == 0 = return board
                                     y_ <- randomRIO (0,(n-1))
                                     -- print x_
                                     -- print y_
-                                    let x = filterIO x_; y = filterIO y_
-                                    let (head, row:rs) = splitAt x board; (rhead, _:rtail) = splitAt y row; newrow = rhead++['O']++rtail in generateObstaclesAux (head++[newrow]++rs) (amount-1)
+                                    let x = filterIO x_; y = filterIO y_; nboard = subNth0 board x y 'O' in generateObstaclesAux nboard (amount-1)
+                                    -- let (head, row:rs) = splitAt x board; (rhead, _:rtail) = splitAt y row; newrow = rhead++['O']++rtail in generateObstaclesAux (head++[newrow]++rs) (amount-1)
 
-genBabyJail :: [[Char]] -> [[Char]]
-genBabyJail board babyCount doneCount = if babyCount == doneCount then board else let (x,y) = getBabyJailIndex board doneCount
+subNth0 :: [[Char]] -> Int -> Int -> Char -> [[Char]]
+subNth0 board i j x = let (head, row:rs) = splitAt i board; (rhead, _:rtail) = splitAt j row; newrow = rhead++[x]++rtail in head++[newrow]++rs
+
+-- genBabyJail :: [[Char]] -> [[Char]]
+-- genBabyJail board babyCount doneCount = if babyCount == doneCount then board else let (x,y) = getBabyJailIndex board doneCount; 
 
 
 filterIO :: Int -> Int

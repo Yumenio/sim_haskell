@@ -20,8 +20,8 @@ randIO_filter r = r
 randIO :: IO Int
 randIO = do
   r <- randomRIO (1,100)
-  let r2 = randIO_filter r
-  return r2
+  return r
+  -- let r2 = randIO_filter r
 
 
 -- aux_func :: IO Int
