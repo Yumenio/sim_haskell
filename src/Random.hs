@@ -1,6 +1,9 @@
+module Random where
 import Control.Monad.State (State, evalState, get, put)
 import System.Random (StdGen, mkStdGen, randomR, Random, randomIO)
 import Control.Applicative ((<$>))
+
+-- runRandom rand <seed>
 
 type R a = State StdGen a
 

@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 import System.Random
 import Distribution.Simple.Program.HcPkg (list)
+import Random
 
 toStr :: [Int] -> String
 toStr [] = ""
@@ -18,19 +19,17 @@ initBoard m n x  | m == 1 = [fill x n]
 
 
 -- generateObstacles :: [[Char]] -> [[Char]]
-generateObstacles :: [[Char]] -> [[Char]]
-generateObstacles board =
-  let m = length board; n = length $ head board; perc = 10; amount = div (m*n*perc) 100 in generateObstaclesAux board amount
+generateObstacles :: [[Char]] -> Int -> [[Char]]
+generateObstacles board seed =
+  let m = length board; n = length $ head board; perc = 10; amount = div (m*n*perc) 100 in generateObstaclesAux board amount seed
 
 -- generateObstaclesAux :: [[Char]] -> Int -> [[Char]]
-generateObstaclesAux :: [[Char]] -> Int -> [[Char]]
-generateObstaclesAux board amount | amount == 0 = board
-                                  | otherwise = do
-                                    let m = length board; n = length $ head board
-                                    x_ <- randomR (0,m-1) 544
-                                    y_ <- randomR (0,n-1)
-                                    let x = filterIntIO x_; y = filterIntIO y_; nboard = subNth0 board x y 'O' in generateObstaclesAux nboard (amount-1)
-                                    -- let (head, row:rs) = splitAt x board; (rhead, _:rtail) = splitAt y row; newrow = rhead++['O']++rtail in generateObstaclesAux (head++[newrow]++rs) (amount-1)
+generateObstaclesAux :: [[Char]] -> Int -> Int -> [[Char]]
+generateObstaclesAux board amount seed  | amount == 0 = board
+                                        | otherwise = do
+                                          let m = length board; n = length $ head board
+                                          let x = runRandom rand seed; y = runRandom rand x; nboard = subNth0 board x y 'O' in generateObstaclesAux nboard (amount-1)
+                                          -- let (head, row:rs) = splitAt x board; (rhead, _:rtail) = splitAt y row; newrow = rhead++['O']++rtail in generateObstaclesAux (head++[newrow]++rs) (amount-1)
 
 rowLengthIO :: IO [[a]] -> IO Int 
 rowLengthIO list = do
@@ -43,10 +42,9 @@ colLengthIO list = do
   return $ length row
 
 
-subNth0 :: IO [[Char]] -> Int -> Int -> Char -> IO [[Char]]
+subNth0 :: [[Char]] -> Int -> Int -> Char -> [[Char]]
 subNth0 board i j x = do
-  escBoard <- board
-  let (head, row:rs) = splitAt i escBoard; (rhead, _:rtail) = splitAt j row; newrow = rhead++[x]++rtail in return $ head++[newrow]++rs
+  let (head, row:rs) = splitAt i board; (rhead, _:rtail) = splitAt j row; newrow = rhead++[x]++rtail in head++[newrow]++rs
 
 genBabyJail :: IO [[Char]] -> Int -> Int -> IO [[Char]]
 genBabyJail board babyCount doneCount = if babyCount == doneCount then board else let (i,j) = getBoardIndex board doneCount; nboard = subNth0 board i j 'S' in genBabyJail nboard babyCount (doneCount+1)
