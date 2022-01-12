@@ -17,6 +17,13 @@ rand = do
   put gen'
   return r
 
+randR :: Int -> Int -> R Int
+randR a b = do
+  gen <- get
+  let (r, gen') = randomR (a,b) gen 
+  put gen'
+  return r
+
 
 -- type Rand a = State StdGen a  
 

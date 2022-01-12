@@ -26,9 +26,8 @@ generateObstacles board seed =
 -- generateObstaclesAux :: [[Char]] -> Int -> [[Char]]
 generateObstaclesAux :: [[Char]] -> Int -> Int -> [[Char]]
 generateObstaclesAux board amount seed  | amount == 0 = board
-                                        | otherwise = do
-                                          let m = length board; n = length $ head board
-                                          let x = runRandom rand seed; y = runRandom rand x; nboard = subNth0 board x y 'O' in generateObstaclesAux nboard (amount-1) seed
+                                        | otherwise = let m = length board; n = length $ head board; x = randomR; y = 0; nboard = subNth0 board x y 'O' in generateObstaclesAux nboard (amount-1) seed
+                                          -- otherwise = let m = length board; n = length $ head board; x = runRandom rand seed; y = runRandom rand x; nboard = subNth0 board x y 'O' in generateObstaclesAux nboard (amount-1) seed
                                           -- let (head, row:rs) = splitAt x board; (rhead, _:rtail) = splitAt y row; newrow = rhead++['O']++rtail in generateObstaclesAux (head++[newrow]++rs) (amount-1)
 
 rowLengthIO :: IO [[a]] -> IO Int 
@@ -42,18 +41,21 @@ colLengthIO list = do
   return $ length row
 
 
-subNth0 :: [[Char]] -> Int -> Int -> Char -> [[Char]]
-subNth0 board i j x = do
-  let (head, row:rs) = splitAt i board; (rhead, _:rtail) = splitAt j row; newrow = rhead++[x]++rtail in head++[newrow]++rs
+-- subNth0 :: [[Char]] -> Int -> Int -> Char -> [[Char]]
+-- subNth0 [] i j x = []
+-- subNth0 ([]:t) i j x = []
+subNth0 board i j x = 
+  let (h, row:rs) = splitAt i board; (rhead, _:rtail) = splitAt j row; newrow = rhead++[x]++rtail in h++[newrow]++rs
 
--- genBabyJail :: IO [[Char]] -> Int -> Int -> IO [[Char]]
--- genBabyJail board babyCount doneCount = if babyCount == doneCount then board else let (i,j) = getBoardIndex board doneCount; nboard = subNth0 board i j 'S' in genBabyJail nboard babyCount (doneCount+1)
 
--- getBoardIndex :: IO [[Char]] -> Int -> IO (Int, Int)
--- getBoardIndex board straightLineIndex = do
---   let n = colLengthIO board;
---   escN <- n
---   let i = div straightLineIndex escN; j = rem straightLineIndex escN; in return (i,j)
+testFunc list i j x = let (h, row:rs) = splitAt i list; (rhead, _:rtail) = splitAt j row; newrow = rhead++[x]++rtail in h++[newrow]++rs
+
+genBabyJail :: [[Char]] -> Int -> Int -> [[Char]]
+genBabyJail board babyCount doneCount = if babyCount == doneCount then board else let (i,j) = getBoardIndex board doneCount; nboard = subNth0 board i j 'S' in genBabyJail nboard babyCount (doneCount+1)
+
+getBoardIndex :: [[Char]] -> Int -> (Int, Int)
+getBoardIndex board straightLineIndex =
+  let n = length $ head board; i = div straightLineIndex n; j = rem straightLineIndex n; in (i,j)
 
 rowDim :: (Foldable f, Num b) => f a -> b
 rowDim = foldr (\ x -> (+) 1) 0
@@ -65,7 +67,7 @@ pprint (r:t) = do
 
 main :: IO ()
 -- main = let m = 5; n = 5; x = 'X'; board = initBoard m n x; board' = generateObstacles board; board'' = genBabyJail board' 3 0 in pprint board''
-main = let seed = 42; m = 5; n = 5; x = 'X'; board = initBoard m n x; board' = generateObstacles board seed in pprint board'
+main = let seed = 42; m = 5; n = 5; x = 'X'; board = initBoard m n x; board' = genBabyJail board 3 0 in pprint board'
 
 cleanPercD board =
   let m = length board; n = length $ head board in cleanPercW board 0 0 0 (m-1) (n-1)
