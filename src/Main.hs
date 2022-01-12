@@ -40,8 +40,9 @@ simulate m n seed =
     x = 'X'; 
     board = initBoard m n x;
     (board', seed') = generateObstacles board seed;
-    board'' = genBabyJail board' 3 0
-    (board''', seed'') = generateRobots board'' 1 seed
+    board'' = genBabyJail board' 3 0;
+    (board''', seed'') = generateRobots board'' 1 seed;
+    (board4,_) = moveRobots board''' seed''
     in pprint board'''
 
 
