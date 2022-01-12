@@ -24,25 +24,12 @@ generateObstacles board seed =
 
 generateObstaclesAux :: [[Char]] -> Int -> Int -> ([[Char]], Int)
 generateObstaclesAux board amount seed  | amount == 0 = (board, seed)
-                                        | otherwise = let m = length board; n = length $ head board; x = runRandom rand seed; y = runRandom rand x; xMod = mod x m; yMod = mod y n; nboard = subNth0 board xMod yMod 'O' in generateObstaclesAux nboard (amount-1) y 
-                                          -- let (head, row:rs) = splitAt x board; (rhead, _:rtail) = splitAt y row; newrow = rhead++['O']++rtail in generateObstaclesAux (head++[newrow]++rs) (amount-1)
-
-rowLengthIO :: IO [[a]] -> IO Int 
-rowLengthIO list = do
-  fmap length list
-
-colLengthIO :: IO [[a]] -> IO Int 
-colLengthIO list = do
-  escList <- list
-  let row = head escList
-  return $ length row
+                                        | otherwise = let m = length board; n = length $ head board; x = runRandom rand seed; y = runRandom rand x; xMod = rem x m; yMod = rem y n; nboard = subNth0 board xMod yMod 'O' in generateObstaclesAux nboard (amount-1) y 
 
 subNth0 board i j x = 
   let (h, row:rs) = splitAt i board; (rhead, _:rtail) = splitAt j row; newrow = rhead++[x]++rtail
   in h++[newrow]++rs
 
-
-testFunc list i j x = let (h, row:rs) = splitAt i list; (rhead, _:rtail) = splitAt j row; newrow = rhead++[x]++rtail in h++[newrow]++rs
 
 genBabyJail :: [[Char]] -> Int -> Int -> [[Char]]
 genBabyJail board babyCount doneCount = if babyCount == doneCount then board else let (i,j) = getBoardIndex board doneCount; nboard = subNth0 board i j 'S' in genBabyJail nboard babyCount (doneCount+1)
@@ -84,14 +71,3 @@ dirtPerc :: [[Char]] -> Int
 dirtPerc board = let m = length board; n = length board in div (sum (map dirt board)*100) (m*n)
 
 cleanPerc board = 100 - dirtPerc board
-
-rndFilter :: Int -> Int
-rndFilter x = x
-
-rrr :: IO ()
-rrr = do
-  r <- randomRIO(1,100)
-  print $ rndFilter r
-
-bnr :: IO Int
-bnr = let r = randomRIO(1,100) in r
