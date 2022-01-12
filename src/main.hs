@@ -38,7 +38,8 @@ colLengthIO list = do
   return $ length row
 
 subNth0 board i j x = 
-  let (h, row:rs) = splitAt i board; (rhead, _:rtail) = splitAt j row; newrow = rhead++[x]++rtail in h++[newrow]++rs
+  let (h, row:rs) = splitAt i board; (rhead, _:rtail) = splitAt j row; newrow = rhead++[x]++rtail
+  in h++[newrow]++rs
 
 
 testFunc list i j x = let (h, row:rs) = splitAt i list; (rhead, _:rtail) = splitAt j row; newrow = rhead++[x]++rtail in h++[newrow]++rs
