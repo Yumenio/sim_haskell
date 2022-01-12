@@ -18,12 +18,10 @@ initBoard m n x  | m == 1 = [fill x n]
                   | otherwise = fill x n : initBoard (m-1) n x
 
 
--- generateObstacles :: [[Char]] -> [[Char]]
 generateObstacles :: [[Char]] -> Int -> ([[Char]], Int)
 generateObstacles board seed =
   let m = length board; n = length $ head board; perc = 10; amount = div (m*n*perc) 100 in generateObstaclesAux board amount seed
 
--- generateObstaclesAux :: [[Char]] -> Int -> [[Char]]
 generateObstaclesAux :: [[Char]] -> Int -> Int -> ([[Char]], Int)
 generateObstaclesAux board amount seed  | amount == 0 = (board, seed)
                                         | otherwise = let m = length board; n = length $ head board; x = runRandom rand seed; y = runRandom rand x; xMod = mod x m; yMod = mod y n; nboard = subNth0 board xMod yMod 'O' in generateObstaclesAux nboard (amount-1) y 
@@ -39,10 +37,6 @@ colLengthIO list = do
   let row = head escList
   return $ length row
 
-
--- subNth0 :: [[Char]] -> Int -> Int -> Char -> [[Char]]
--- subNth0 [] i j x = []
--- subNth0 ([]:t) i j x = []
 subNth0 board i j x = 
   let (h, row:rs) = splitAt i board; (rhead, _:rtail) = splitAt j row; newrow = rhead++[x]++rtail in h++[newrow]++rs
 
