@@ -19,15 +19,14 @@ initBoard m n x  | m == 1 = [fill x n]
 
 
 -- generateObstacles :: [[Char]] -> [[Char]]
-generateObstacles :: [[Char]] -> Int -> [[Char]]
+generateObstacles :: [[Char]] -> Int -> ([[Char]], Int)
 generateObstacles board seed =
   let m = length board; n = length $ head board; perc = 10; amount = div (m*n*perc) 100 in generateObstaclesAux board amount seed
 
 -- generateObstaclesAux :: [[Char]] -> Int -> [[Char]]
-generateObstaclesAux :: [[Char]] -> Int -> Int -> [[Char]]
-generateObstaclesAux board amount seed  | amount == 0 = board
-                                        | otherwise = let m = length board; n = length $ head board; x = randomR; y = 0; nboard = subNth0 board x y 'O' in generateObstaclesAux nboard (amount-1) seed
-                                          -- otherwise = let m = length board; n = length $ head board; x = runRandom rand seed; y = runRandom rand x; nboard = subNth0 board x y 'O' in generateObstaclesAux nboard (amount-1) seed
+generateObstaclesAux :: [[Char]] -> Int -> Int -> ([[Char]], Int)
+generateObstaclesAux board amount seed  | amount == 0 = (board, seed)
+                                        | otherwise = let m = length board; n = length $ head board; x = runRandom rand seed; y = runRandom rand x; xMod = mod x m; yMod = mod y n; nboard = subNth0 board xMod yMod 'O' in generateObstaclesAux nboard (amount-1) y 
                                           -- let (head, row:rs) = splitAt x board; (rhead, _:rtail) = splitAt y row; newrow = rhead++['O']++rtail in generateObstaclesAux (head++[newrow]++rs) (amount-1)
 
 rowLengthIO :: IO [[a]] -> IO Int 
@@ -60,14 +59,14 @@ getBoardIndex board straightLineIndex =
 rowDim :: (Foldable f, Num b) => f a -> b
 rowDim = foldr (\ x -> (+) 1) 0
 
+pprint :: [[Char]] -> IO ()
 pprint [] = putStrLn ""
 pprint (r:t) = do
   print r
   pprint t
 
-main :: IO ()
--- main = let m = 5; n = 5; x = 'X'; board = initBoard m n x; board' = generateObstacles board; board'' = genBabyJail board' 3 0 in pprint board''
-main = let seed = 42; m = 5; n = 5; x = 'X'; board = initBoard m n x; board' = genBabyJail board 3 0 in pprint board'
+simulate :: Int -> Int -> Int -> IO()
+simulate m n seed = let x = 'X'; board = initBoard m n x; (board', seed') = generateObstacles board seed; board'' = genBabyJail board' 3 0 in pprint board''
 
 cleanPercD board =
   let m = length board; n = length $ head board in cleanPercW board 0 0 0 (m-1) (n-1)

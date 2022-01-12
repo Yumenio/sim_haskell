@@ -13,7 +13,7 @@ runRandom action seed = evalState action $ mkStdGen seed
 rand :: R Int
 rand = do
   gen <- get
-  let (r, gen') = randomR (0,99) gen 
+  let (r, gen') = randomR (0,9999) gen 
   put gen'
   return r
 
