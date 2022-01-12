@@ -17,6 +17,9 @@ rand = do
   put gen'
   return r
 
+
+-- shouldn't use with a little interval for a long period of time, lest the result and the seed are equals and no subsequent random number is generated
+-- a decent workaround, use the rand function and then calculate the modulo, but use as seed the original number, not the result of the mod operation
 randR :: Int -> Int -> R Int
 randR a b = do
   gen <- get
