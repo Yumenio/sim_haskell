@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts #-}
+module Main where
 import System.Random
 import Distribution.Simple.Program.HcPkg (list)
 import Random
@@ -49,6 +49,11 @@ pprint (r:t) = do
 
 simulate :: Int -> Int -> Int -> IO()
 simulate m n seed = let x = 'X'; board = initBoard m n x; (board', seed') = generateObstacles board seed; board'' = genBabyJail board' 3 0 in pprint board''
+
+
+main :: IO ()
+main = simulate 5 5 42
+
 
 cleanPercD board =
   let m = length board; n = length $ head board in cleanPercW board 0 0 0 (m-1) (n-1)
