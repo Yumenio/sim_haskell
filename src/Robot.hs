@@ -1,8 +1,25 @@
 module Robot where
 import Utils (subNth0, getBoardIndex)
 
-moveLeftR board i 0 = board
-moveLeftR board i j = moveAny board i j 0 (-1) 'X'
+-- I, J, State
+data Robot = Robot { robotRow :: Int, robotCol :: Int, robotState :: Int} deriving (Show)
+
+robotAll :: Robot -> (Int, Int, Int)
+robotAll robot = (robotRow robot, robotCol robot, robotState robot)
+
+moveLeftR :: [[Char ]] -> Robot -> ([[Char]], Robot)
+moveLeftR board robot =
+  let
+    (i,j,s) = robotAll robot
+    in
+      if j == 0
+        then (board,robot)
+        else
+          let 
+            board' = moveAny board i j 0 (-1) 'X'
+            robot' = Robot i (j-1) s
+            in (board', robot')
+
   -- let board' = subNth0 board i j 'X' in subNth0 board' i (j-1) 'R'
 
 moveUpR board 0 j = board
@@ -17,7 +34,6 @@ moveRightR board i j =
         then board
         else moveAny board i j 0 1 'X'
 
-
 moveDownR board i j =
   let
     -- m = length board
@@ -28,6 +44,7 @@ moveDownR board i j =
         else moveAny board i j 1 0 'X'
 
 
+-- cleanR board i j = 
 
 moveAny board i j deltaI deltaJ sub =
   let
