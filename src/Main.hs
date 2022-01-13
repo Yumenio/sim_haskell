@@ -4,6 +4,7 @@ import Distribution.Simple.Program.HcPkg (list)
 import Random
 import Utils (initBoard, getBoardIndex, pprint, subNth0)
 import Robot
+import Babies
 
 
 
@@ -14,29 +15,6 @@ generateObstacles board seed =
 generateObstaclesAux :: [[Char]] -> Int -> Int -> ([[Char]], Int)
 generateObstaclesAux board amount seed  | amount == 0 = (board, seed)
                                         | otherwise = let m = length board; n = length $ head board; x = runRandom rand seed; y = runRandom rand x; xMod = mod x m; yMod = mod y n; nboard = subNth0 board xMod yMod 'O' in generateObstaclesAux nboard (amount-1) y 
-
-genBabyJail :: [[Char]] -> Int -> Int -> [[Char]]
-genBabyJail board babyCount doneCount = if babyCount == doneCount then board else let (i,j) = getBoardIndex board doneCount; nboard = subNth0 board i j 'S' in genBabyJail nboard babyCount (doneCount+1)
-
-generateRobots :: [[Char]] -> Int -> Int -> ([[Char]], [Robot], Int)
-generateRobots board amount seed = generateRobotsAux board amount seed []
-
-generateRobotsAux :: [[Char]] -> Int -> Int -> [Robot] -> ([[Char]], [Robot], Int)
-generateRobotsAux board 0 seed robots = (board, robots, seed)
-generateRobotsAux board amount seed robots =
-  let
-    m = length board;
-    n = length $ head board;
-    x = runRandom rand seed; xMod = mod x m;
-    y = runRandom rand x; yMod = mod y n
-    in
-      if board!!xMod!!yMod /= 'X'
-        then generateRobotsAux board amount y robots
-        else
-          let
-            board' = subNth0 board xMod yMod 'R'
-            robot = Robot xMod yMod 0
-            in generateRobotsAux board' (amount-1) y (robot:robots)
 
 
 simulate :: Int -> Int -> Int -> IO()

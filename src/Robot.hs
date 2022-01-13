@@ -1,4 +1,5 @@
 module Robot where
+import Random
 import Utils (subNth0, getBoardIndex)
 
 -- I, J, State
@@ -107,3 +108,26 @@ findRobot board index =
           if item == 'R'
             then (i,j)
             else findRobot board (index+1)
+
+
+
+
+generateRobots :: [[Char]] -> Int -> Int -> ([[Char]], [Robot], Int)
+generateRobots board amount seed = generateRobotsAux board amount seed []
+
+generateRobotsAux :: [[Char]] -> Int -> Int -> [Robot] -> ([[Char]], [Robot], Int)
+generateRobotsAux board 0 seed robots = (board, robots, seed)
+generateRobotsAux board amount seed robots =
+  let
+    m = length board;
+    n = length $ head board;
+    x = runRandom rand seed; xMod = mod x m;
+    y = runRandom rand x; yMod = mod y n
+    in
+      if board!!xMod!!yMod /= 'X'
+        then generateRobotsAux board amount y robots
+        else
+          let
+            board' = subNth0 board xMod yMod 'R'
+            robot = Robot xMod yMod 0
+            in generateRobotsAux board' (amount-1) y (robot:robots)

@@ -1,5 +1,5 @@
 module Babies where
-import Utils (subNth0, getBoardIndex, moveAnyB)
+import Utils (subNth0, getBoardIndex)
 
 data Baby = Baby {babyRow :: Int, babyCol :: Int} deriving (Show)
 
@@ -10,7 +10,7 @@ babyCoor baby = (babyRow baby, babyCol baby)
 moveLeftB :: [[Char ]] -> Baby -> ([[Char]], Baby)
 moveLeftB board baby =
   let
-    (i,j,s) = babyCoor baby
+    (i,j) = babyCoor baby
     in
       if j == 0
         then (board,baby)
@@ -69,7 +69,7 @@ moveDownB board baby =
 -- cleanR board i j = 
 
 moveAnyB board i j deltaI deltaJ sub =
-  if canMove board (i+deltaI) (j+deltaJ)
+  if canMoveB board (i+deltaI) (j+deltaJ)
     then
       let
         oldItem = board!!i!!j;
@@ -79,9 +79,21 @@ moveAnyB board i j deltaI deltaJ sub =
       board
 
 
-canMove :: [[Char]] -> Int -> Int -> Bool
-canMove board i j =
+canMoveB :: [[Char]] -> Int -> Int -> Bool
+canMoveB board i j =
   let
     elem = board!!i!!j
     in  -- O => Obstacle, R => Robot, B => Baby in jail xd
       not (elem == 'O' || elem == 'R' || elem == 'B')
+
+
+
+genBabyJail :: [[Char]] -> Int -> Int -> [[Char]]
+genBabyJail board babyCount doneCount =
+  if babyCount == doneCount
+    then board
+    else
+      let
+        (i,j) = getBoardIndex board doneCount;
+        nboard = subNth0 board i j 'S'
+        in genBabyJail nboard babyCount (doneCount+1)
