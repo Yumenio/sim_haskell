@@ -16,7 +16,7 @@ moveLeftR board robot =
         then (board,robot)
         else
           let
-            board' = moveAny board i j 0 (-1) 'X'
+            board' = moveAnyR board i j 0 (-1) 'X'
             robot' = Robot i (j-1) s
             in (board', robot')
 
@@ -31,7 +31,7 @@ moveUpR board robot =
         then (board,robot)
         else
           let
-            board' = moveAny board i j (-1) 0 'X'
+            board' = moveAnyR board i j (-1) 0 'X'
             robot' = Robot (i-1) j s
             in (board', robot')
 
@@ -39,13 +39,13 @@ moveRightR :: [[Char]] -> Robot -> ([[Char]], Robot)
 moveRightR board robot =
   let
     (i,j,s) = robotAll robot
-    m = length board
+    n = length $ head board
     in
-      if i == m
+      if i == (n-1)
         then (board,robot)
         else
           let
-            board' = moveAny board i j 0 1 'X'
+            board' = moveAnyR board i j 0 1 'X'
             robot' = Robot i (j+1) s
             in (board', robot')
 
@@ -59,15 +59,15 @@ moveDownR board robot =
         then (board,robot)
         else
           let
-            board' = moveAny board i j 1 0 'X'
+            board' = moveAnyR board i j 1 0 'X'
             robot' = Robot (i+1) j s
             in (board', robot')
 
 
 -- cleanR board i j = 
 
-moveAny board i j deltaI deltaJ sub =
-  if canMove board (i+deltaI) (j+deltaJ)
+moveAnyR board i j deltaI deltaJ sub =
+  if canMoveR board (i+deltaI) (j+deltaJ)
     then
       let
         oldItem = board!!i!!j;
@@ -77,12 +77,13 @@ moveAny board i j deltaI deltaJ sub =
       board
 
 
-canMove :: [[Char]] -> Int -> Int -> Bool
-canMove board i j =
+canMoveR :: [[Char]] -> Int -> Int -> Bool
+canMoveR board i j =
   let
     elem = board!!i!!j
     in  -- O => Obstacle, R => Robot, B => Baby in jail xd
       not (elem == 'O' || elem == 'R' || elem == 'B')
+
 
 moveRobots :: [[Char]] -> [Robot] -> Int -> ([[Char]], [Robot], Int)
 moveRobots board [] seed = (board, [], seed)

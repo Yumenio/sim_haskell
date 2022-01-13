@@ -1,6 +1,5 @@
 module Utils where
 
-
 fill x times  | times == 1 = [x]
               | times < 1 = []
               | otherwise = x : fill x (times-1)
