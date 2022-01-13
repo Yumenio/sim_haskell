@@ -1,4 +1,5 @@
 module Utils where
+import Random (runRandom, rand)
 
 fill x times  | times == 1 = [x]
               | times < 1 = []
@@ -22,6 +23,20 @@ getBoardIndex board straightLineIndex =
     i = div straightLineIndex n;
     j = rem straightLineIndex n;
     in (i,j)
+
+randomAdj :: Int -> Int -> Int -> (Int, Int, Int)
+randomAdj i j seed =
+  let
+    r = runRandom rand seed
+    rMod = mod r 4
+    in
+      case rMod of
+        0 -> (i, j+1, r)
+        1 -> (i+1, j, r)
+        2 -> (i, j-1, r)
+        3 -> (i-1, j, r)
+        _ -> (i, j, r) -- should not happen but who knows x)
+
 
 rowDim :: (Foldable f, Num b) => f a -> b
 rowDim = foldr (\ x -> (+) 1) 0

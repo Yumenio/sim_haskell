@@ -1,5 +1,6 @@
 module Babies where
 import Utils (subNth0, getBoardIndex)
+import Random (rand, runRandom)
 
 data Baby = Baby {babyRow :: Int, babyCol :: Int} deriving (Show)
 
@@ -83,8 +84,8 @@ canMoveB :: [[Char]] -> Int -> Int -> Bool
 canMoveB board i j =
   let
     elem = board!!i!!j
-    in  -- O => Obstacle, R => Robot, B => Baby in jail xd
-      not (elem == 'O' || elem == 'R' || elem == 'B')
+    in  -- O => Obstacle, R => Robot, Z => Baby in jail xd
+      not (elem == 'O' || elem == 'R' || elem == 'Z')
 
 
 
@@ -97,3 +98,31 @@ genBabyJail board babyCount doneCount =
         (i,j) = getBoardIndex board doneCount;
         nboard = subNth0 board i j 'S'
         in genBabyJail nboard babyCount (doneCount+1)
+
+
+
+
+generateBabies :: [[Char]] -> Int -> Int -> ([[Char]], [Baby], Int)
+generateBabies board amount seed = generateBabiesAux board amount seed []
+
+generateBabiesAux :: [[Char]] -> Int -> Int -> [Baby] -> ([[Char]], [Baby], Int)
+generateBabiesAux board 0 seed babies = (board, babies, seed)
+generateBabiesAux board amount seed babies =
+  let
+    m = length board;
+    n = length $ head board;
+    x = runRandom rand seed; xMod = mod x m;
+    y = runRandom rand x; yMod = mod y n
+    in
+      if board!!xMod!!yMod /= 'X'
+        then generateBabiesAux board amount y babies
+        else
+          let
+            board' = subNth0 board xMod yMod 'B'
+            baby = Baby xMod yMod
+            in generateBabiesAux board' (amount-1) y (baby:babies)
+
+
+generateSimpleDirt :: [[Char]] -> [Baby] -> Int -> ([[Char]], Int)
+generateSimpleDirt board babies seed =
+  (board,0)
