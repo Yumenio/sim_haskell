@@ -18,9 +18,12 @@ generateObstaclesAux board amount seed  | amount == 0 = (board, seed)
 genBabyJail :: [[Char]] -> Int -> Int -> [[Char]]
 genBabyJail board babyCount doneCount = if babyCount == doneCount then board else let (i,j) = getBoardIndex board doneCount; nboard = subNth0 board i j 'S' in genBabyJail nboard babyCount (doneCount+1)
 
-generateRobots :: [[Char]] -> Int -> Int -> ([[Char]], Int)
-generateRobots board 0 seed = (board, seed)
-generateRobots board amount seed =
+generateRobots :: [[Char]] -> Int -> Int -> ([[Char]], [Robot], Int)
+generateRobots board amount seed = generateRobotsAux board amount seed []
+
+generateRobotsAux :: [[Char]] -> Int -> Int -> [Robot] -> ([[Char]], [Robot], Int)
+generateRobotsAux board 0 seed robots = (board, robots, seed)
+generateRobotsAux board amount seed robots =
   let
     m = length board;
     n = length $ head board;
@@ -28,22 +31,26 @@ generateRobots board amount seed =
     y = runRandom rand x; yMod = mod y n
     in
       if board!!xMod!!yMod /= 'X'
-        then generateRobots board amount y
+        then generateRobotsAux board amount y robots
         else
           let
             board' = subNth0 board xMod yMod 'R'
-            in generateRobots board' (amount-1) y
+            robot = Robot xMod yMod 0
+            in generateRobotsAux board' (amount-1) y (robot:robots)
+
 
 simulate :: Int -> Int -> Int -> IO()
 simulate m n seed =
-  let
-    x = 'X'; 
-    board = initBoard m n x;
-    (board', seed') = generateObstacles board seed;
-    board'' = genBabyJail board' 3 0;
-    (board''', seed'') = generateRobots board'' 1 seed;
-    (board4,_) = moveRobots board''' seed''
-    in pprint board'''
+  do
+    let 
+      x = 'X'; 
+      board = initBoard m n x;
+      (board', seed') = generateObstacles board seed;
+      board'' = genBabyJail board' 3 0;
+      (board''', robots, seed'') = generateRobots board'' 2 seed';
+      (board4, robots', _) = moveRobots board''' robots seed''
+    pprint board'''
+    pprint board4
 
 
 main :: IO ()

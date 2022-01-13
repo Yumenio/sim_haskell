@@ -15,7 +15,7 @@ moveLeftR board robot =
       if j == 0
         then (board,robot)
         else
-          let 
+          let
             board' = moveAny board i j 0 (-1) 'X'
             robot' = Robot i (j-1) s
             in (board', robot')
@@ -53,15 +53,13 @@ moveAny board i j deltaI deltaJ sub =
     in subNth0 board' i j sub
 
 
-moveRobots :: [[Char]] -> Int -> ([[Char]], Int)
-moveRobots board seed =
-  do
-    let
-      (i,j) = findRobot board 0;
-      in
-        if i == -1  --no robots left
-          then (board, seed)
-          else (moveLeftR board i j, seed)
+moveRobots :: [[Char]] -> [Robot] -> Int -> ([[Char]], [Robot], Int)
+moveRobots board [] seed = (board, [], seed)
+moveRobots board (robot: rs) seed =
+  let
+    (board', robot') = moveLeftR board robot
+    (board'', rs', seed') = moveRobots board' rs seed
+    in (board'', robot':rs', seed')
 
 findRobot :: [[Char]] -> Int -> (Int, Int)
 findRobot board index =
