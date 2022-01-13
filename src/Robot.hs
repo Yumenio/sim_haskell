@@ -42,7 +42,7 @@ moveRightR board robot =
     (i,j,s) = robotAll robot
     n = length $ head board
     in
-      if i == (n-1)
+      if j == (n-1)
         then (board,robot)
         else
           let
@@ -90,7 +90,7 @@ moveRobots :: [[Char]] -> [Robot] -> Int -> ([[Char]], [Robot], Int)
 moveRobots board [] seed = (board, [], seed)
 moveRobots board (robot: rs) seed =
   let
-    (board', robot') = moveDownR board robot
+    (board', robot') = moveRightR board robot
     (board'', rs', seed') = moveRobots board' rs seed
     in (board'', robot':rs', seed')
 

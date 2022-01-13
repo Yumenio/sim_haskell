@@ -27,7 +27,7 @@ moveUpB board baby =
   let
     (i,j) = babyCoor baby
     in
-      if j == 0
+      if i == 0
         then (board,baby)
         else
           let
@@ -42,7 +42,7 @@ moveRightB board baby =
     (i,j) = babyCoor baby
     n = length $ head board
     in
-      if i == (n-1)
+      if j == (n-1)
         then (board,baby)
         else
           let

@@ -9,12 +9,19 @@ initBoard m n x  | m == 1 = [fill x n]
                   | otherwise = fill x n : initBoard (m-1) n x
 
 subNth0 board i j x = 
-  let (h, row:rs) = splitAt i board; (rhead, _:rtail) = splitAt j row; newrow = rhead++[x]++rtail
-  in h++[newrow]++rs
+  let
+    (h, row:rs) = splitAt i board;
+    (rhead, _:rtail) = splitAt j row;
+    newrow = rhead++[x]++rtail
+    in h++[newrow]++rs
 
 getBoardIndex :: [[Char]] -> Int -> (Int, Int)
 getBoardIndex board straightLineIndex =
-  let n = length $ head board; i = div straightLineIndex n; j = rem straightLineIndex n; in (i,j)
+  let
+    n = length $ head board;
+    i = div straightLineIndex n;
+    j = rem straightLineIndex n;
+    in (i,j)
 
 rowDim :: (Foldable f, Num b) => f a -> b
 rowDim = foldr (\ x -> (+) 1) 0
