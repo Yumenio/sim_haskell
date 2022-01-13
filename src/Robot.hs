@@ -18,6 +18,15 @@ moveRightR board i j =
         else moveAny board i j 0 1 'X'
 
 
+moveDownR board i j =
+  let
+    -- m = length board
+    n = length $ head board
+    in
+      if i == (n-1)
+        then board
+        else moveAny board i j 1 0 'X'
+
 
 
 moveAny board i j deltaI deltaJ sub =
