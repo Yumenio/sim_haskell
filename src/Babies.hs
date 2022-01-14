@@ -1,5 +1,5 @@
 module Babies where
-import Utils (subNth0, getBoardIndex)
+import Utils (subNth0, getBoardIndex, randomAdj)
 import Random (rand, runRandom)
 
 data Baby = Baby {babyRow :: Int, babyCol :: Int} deriving (Show)
@@ -124,5 +124,17 @@ generateBabiesAux board amount seed babies =
 
 
 generateSimpleDirt :: [[Char]] -> [Baby] -> Int -> ([[Char]], Int)
-generateSimpleDirt board babies seed =
-  (board,0)
+generateSimpleDirt board [] seed = (board, seed)
+generateSimpleDirt board (baby:bs) seed =
+  let
+    (i,j) = babyCoor baby
+    (i', j', seed') = randomAdj board i j seed
+    in
+      if board!!i'!!j' /= 'X'
+        then
+          generateSimpleDirt board bs seed'
+        else
+          let
+            board' = subNth0 board i' j' 'X'
+            in
+              generateSimpleDirt board' bs seed'

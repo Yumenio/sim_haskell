@@ -6,7 +6,14 @@ import Utils (initBoard, getBoardIndex, pprint, subNth0)
 import Robot
 import Babies
 
-
+--  LEGEND
+--'X'=Empty Cell
+--'R'=Robot
+--'B'=Baby
+--'O'=Obstacle
+--'S'=BabyJail
+--'C'=Crap
+--'Z'=Baby in Jail :D
 
 generateObstacles :: [[Char]] -> Int -> ([[Char]], Int)
 generateObstacles board seed =
