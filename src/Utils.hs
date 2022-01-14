@@ -24,18 +24,26 @@ getBoardIndex board straightLineIndex =
     j = rem straightLineIndex n;
     in (i,j)
 
-randomAdj :: Int -> Int -> Int -> (Int, Int, Int)
-randomAdj i j seed =
+randomAdj :: [[Char]] -> Int -> Int -> Int -> (Int, Int, Int)
+randomAdj board i j seed =
   let
     r = runRandom rand seed
     rMod = mod r 4
     in
       case rMod of
-        0 -> (i, j+1, r)
-        1 -> (i+1, j, r)
-        2 -> (i, j-1, r)
-        3 -> (i-1, j, r)
+        0 -> if validPos board i (j+1) then (i, j+1, r) else randomAdj board i j r
+        1 -> if validPos board (i+1) j then (i+1, j, r) else randomAdj board i j r
+        2 -> if validPos board i (j-1) then (i, j-1, r) else randomAdj board i j r
+        3 -> if validPos board (i-1) j then (i-1, j, r) else randomAdj board i j r
         _ -> (i, j, r) -- should not happen but who knows x)
+
+validPos :: [[Char]] -> Int -> Int -> Bool
+validPos board i j =
+  let
+    m = length board
+    n = length $ head board
+    in
+      i >= 0 && i < m && j >= 0 && j < n
 
 
 rowDim :: (Foldable f, Num b) => f a -> b
