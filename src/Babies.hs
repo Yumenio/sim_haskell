@@ -21,7 +21,6 @@ moveLeftB board baby =
             baby' = Baby i (j-1)
             in (board', baby')
 
-  -- let board' = subNth0 board i j 'X' in subNth0 board' i (j-1) 'R'
 
 moveUpB :: [[Char ]] -> Baby -> ([[Char]], Baby)
 moveUpB board baby =
@@ -122,7 +121,7 @@ generateBabiesAux board amount seed babies =
             baby = Baby xMod yMod
             in generateBabiesAux board' (amount-1) y (baby:babies)
 
-
+--not considering all 3x3 squares in the board, i think that's lame af
 generateSimpleDirt :: [[Char]] -> [Baby] -> Int -> ([[Char]], Int)
 generateSimpleDirt board [] seed = (board, seed)
 generateSimpleDirt board (baby:bs) seed =
@@ -138,6 +137,32 @@ generateSimpleDirt board (baby:bs) seed =
             board' = subNth0 board i' j' 'X'
             in
               generateSimpleDirt board' bs seed'
+
+moveBabies :: [[Char]] -> [Baby] -> Int -> ([[Char]], [Baby], Int)
+moveBabies board [] seed = (board, [], seed)
+moveBabies board (baby:bs) seed =
+  let
+    (board', baby', seed') = moveBaby board baby seed
+    (board'', bs', seed'') = moveBabies board' bs seed'
+    in
+      (board'', baby':bs', seed'')
+
+
+moveBaby :: [[Char]] -> Baby -> Int -> ([[Char]], Baby, Int)
+moveBaby board baby seed =
+  let
+    (i,j) = babyCoor baby
+    (i', j', seed') = randomAdj board i j seed
+    in
+      if canMoveB board i' j'
+        then
+          let
+            board' = subNth0 board i' j' 'B'
+            baby' = Baby i' j'
+            in
+              (board', baby', seed')
+        else
+          (board, baby, seed')
 
 
 --for using with map function
