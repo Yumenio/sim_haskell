@@ -84,9 +84,10 @@ generateEnvironment m n seed =
       perc = 10
       t = 2
       board = initBoard m n x
-      (board', seed') = generateObstacles board perc seed
+      (dirtiedBoard, seed') = generateInitialDirt board 7 seed
+      (board', seed'') = generateObstacles dirtiedBoard perc seed'
       board'' = genBabyJail board' 3 0
-      (board''', babies, seed'') = generateBabies board'' 3 seed'
+      (board''', babies, seed''') = generateBabies board'' 3 seed''
       in
         simulateEnvironment t board''' babies seed''
 
