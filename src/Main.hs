@@ -15,6 +15,33 @@ import Babies
 --'C'=Crap
 --'Z'=Baby in Jail :D
 
+--first of the pipeline
+generateInitialDirt :: [[Char]] -> Int -> ([[Char]], Int)
+generateInitialDirt board seed =
+  let
+    m = length board
+    n = length $ head board
+    perc = 7
+    amount = div (m*n*perc) 100
+    in
+      generateInitialDirtAux board amount seed
+
+generateInitialDirtAux :: [[Char]] -> Int -> Int -> ([[Char]], Int)
+generateInitialDirtAux board 0 seed  = (board, seed)
+generateInitialDirtAux board amount seed =
+  let
+    m = length board;
+    n = length $ head board;
+    x = runRandom rand seed;
+    y = runRandom rand x;
+    xMod = mod x m;
+    yMod = mod y n;
+    board' = subNth0 board xMod yMod 'C'
+    in
+      generateInitialDirtAux board' (amount-1) y
+
+
+--second of the pipeline
 generateObstacles :: [[Char]] -> Int -> ([[Char]], Int)
 generateObstacles board seed =
   let
