@@ -138,3 +138,15 @@ generateSimpleDirt board (baby:bs) seed =
             board' = subNth0 board i' j' 'X'
             in
               generateSimpleDirt board' bs seed'
+
+
+--for using with map function
+genSingleDirt :: ([[Char]], Baby, Int) -> (Int, Int)
+genSingleDirt (board, baby, seed) =
+  let
+    (i,j) = babyCoor baby
+    (i', j', seed') = randomAdj board i j seed
+    in
+      if board!!i'!!j' /= 'X'
+        then (-1,-1)
+        else (i',j')
