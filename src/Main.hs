@@ -51,6 +51,29 @@ simulate m n seed =
     pprint board'''
     pprint board4
 
+generateEnvironment m n seed =
+  do
+    let
+      x = 'X'
+      t = 2
+      board = initBoard m n x
+      (board', seed') = generateObstacles board seed
+      board'' = genBabyJail board' 3 0;
+      (board''', babies, seed'') = generateBabies board'' 3 seed'
+      in
+        simulateEnvironment t board''' babies seed''
+
+
+simulateEnvironment :: Int -> [[Char]] -> [Baby] -> Int -> IO ()
+simulateEnvironment 0 board babies seed = pprint board
+simulateEnvironment cycles board babies seed =
+  do
+    pprint board
+    let
+      (dirtiedBoard, seed') = generateSimpleDirt board babies seed
+      (board', babies', seed'') = moveBabies dirtiedBoard babies seed'
+    simulateEnvironment (cycles-1) board' babies' seed''
+
 
 main :: IO ()
 main = simulate 5 5 42

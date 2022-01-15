@@ -82,8 +82,8 @@ canMoveR :: [[Char]] -> Int -> Int -> Bool
 canMoveR board i j =
   let
     elem = board!!i!!j
-    in  -- O => Obstacle, R => Robot, Z => Baby in jail xd
-      not (elem == 'O' || elem == 'R' || elem == 'Z')
+    in  -- O => Obstacle, C => Crap, R => Robot, B => Baby, Z => Baby in jail xd
+      not (elem == 'O' || elem == 'C' || elem == 'R' || elem == 'B' || elem == 'Z')
 
 
 moveRobots :: [[Char]] -> [Robot] -> Int -> ([[Char]], [Robot], Int)
