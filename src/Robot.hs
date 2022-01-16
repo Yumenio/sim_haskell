@@ -134,23 +134,23 @@ generateRobotsAux board amount seed robots =
             in generateRobotsAux board' (amount-1) y (robot:robots)
 
 
--- reactiveAgent :: [[Char]] -> Robot -> [Baby] -> ([[Char]], Robot, [Baby])
--- reactiveAgent board robot babies =
---   let
---     (i, j, s) = robotAll robot
---     in
---       case s of
---         1 ->
---           let
---             path = lookForObjectiveR board robot
---             (board', robot') = followPath board robot path 2
---             in (board', robot', babies)
---         2 ->
---           let
---             path = lookForBabyJail board
---             (board', robot') = followPath board robot path 1
---             in (board', robot', babies)
---         _ -> (board, robot, babies)
+reactiveAgent :: [[Char]] -> Robot -> [Baby] -> ([[Char]], Robot, [Baby])
+reactiveAgent board robot babies =
+  let
+    (i, j, s) = robotAll robot
+    in
+      case s of
+        1 ->
+          let
+            path = lookForObjectiveR board robot
+            (board', robot') = followPath board robot path 2
+            in (board', robot', babies)
+        2 ->
+          let
+            path = lookForBabyJail board robot
+            (board', robot') = followPath board robot path 1
+            in (board', robot', babies)
+        _ -> (board, robot, babies)
 
 
 followPath :: [[Char]] -> Robot -> [(Int,Int)] -> Int -> ([[Char]], Robot)
@@ -181,12 +181,19 @@ lookForObjectiveR board robot =
     in
       bfsObjR board objectives (i,j)
 
+lookForBabyJail :: [[Char]] -> Robot -> [(Int, Int)]
+lookForBabyJail board robot =
+  let
+    (i,j,s) = robotAll robot
+    in
+      bfsGenericObj board [[(i,j)]] [(i,j)] ['S']
+
 bfsObjR :: [[Char]] -> [Char] -> (Int, Int) -> [(Int, Int)]
 bfsObjR board  objectives (i,j) =
-  bfsObjRAux board [[(i,j)]] [(i,j)] objectives
+  bfsGenericObj board [[(i,j)]] [(i,j)] objectives
 
-bfsObjRAux :: [[Char]] -> [[(Int, Int)]] -> [(Int, Int)] -> [Char] -> [(Int, Int)]
-bfsObjRAux board queue visited objectives =
+bfsGenericObj :: [[Char]] -> [[(Int, Int)]] -> [(Int, Int)] -> [Char] -> [(Int, Int)]
+bfsGenericObj board queue visited objectives =
   do
     let
       (h:tail) = queue
@@ -207,31 +214,25 @@ bfsObjRAux board queue visited objectives =
                   [adj1] -> let
                     newQueue = appendPath tail h [adj1]
                     in
-                      bfsObjRAux board  newQueue visited' objectives
+                      bfsGenericObj board  newQueue visited' objectives
 
                   [adj1,adj2] -> let
                     newQueue = appendPath tail h [adj1,adj2]
-                    -- newQueue' = appendPath newQueue h adj2
                     in
-                      bfsObjRAux board  newQueue visited' objectives
+                      bfsGenericObj board  newQueue visited' objectives
 
                   [adj1,adj2,adj3] -> let
                     newQueue = appendPath tail h [adj1,adj2,adj3]
-                    -- newQueue' = appendPath newQueue h adj2
-                    -- newQueue'' = appendPath newQueue' h adj3
                     in
-                      bfsObjRAux board  newQueue visited' objectives
+                      bfsGenericObj board  newQueue visited' objectives
 
                   [adj1,adj2,adj3,adj4] -> let
                     newQueue = appendPath tail h [adj1,adj2,adj3,adj4]
-                    -- newQueue' = appendPath newQueue h adj2
-                    -- newQueue'' = appendPath newQueue' h adj3
-                    -- newQueue''' = appendPath newQueue'' h adj4
                     in
-                      bfsObjRAux board  newQueue visited' objectives
+                      bfsGenericObj board  newQueue visited' objectives
 
 
-                  _ -> bfsObjRAux board tail visited' objectives
+                  _ -> bfsGenericObj board tail visited' objectives
 
 appendPath :: [[(Int, Int)]] -> [(Int, Int)] -> [(Int, Int)] -> [[(Int, Int)]]                
 appendPath queue path [] = reverse queue
