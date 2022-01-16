@@ -185,29 +185,29 @@ bfsObjR :: [[Char]] -> (Int, Int) -> [(Int, Int)]
 bfsObjR board  objectives (i,j) =
   bfsObjRAux board (i,j) [(i,j)] objectives []
 
-bfsObjRAux :: [[Char]] -> [[(Int, Int)]] -> [(Int, Int)] -> [Char] -> [(Int, Int)]
-bfsObjRAux board queue visited objectives =
-  do
-    let
-      (h:tail) = queue
-      (i,j) = last h
-    if (board!!i!!j) `elem` objectives
-      then
-        h
-      else
-        if length visited >= ((length board * length (head board))-1)
-          then
-            error "objective not found"
-          else
-            let
-              adjs = getAdjacents board (i,j) visited
-              in
-                case adjs of
-                  [adj1] -> bfsObjRAux board tail++(h:adj1) (visited++[(i,j)]) objectives
+-- bfsObjRAux :: [[Char]] -> [[(Int, Int)]] -> [(Int, Int)] -> [Char] -> [(Int, Int)]
+-- bfsObjRAux board queue visited objectives =
+--   do
+--     let
+--       (h:tail) = queue
+--       (i,j) = last h
+--     if (board!!i!!j) `elem` objectives
+--       then
+--         h
+--       else
+--         if length visited >= ((length board * length (head board))-1)
+--           then
+--             error "objective not found"
+--           else
+--             let
+--               adjs = getAdjacents board (i,j) visited
+--               in
+--                 case adjs of
+--                   [adj1] -> bfsObjRAux board tail++(h:adj1) (visited++[(i,j)]) objectives
 
 
-                  [adj1,adj2] -> bfsObjRAux board (tail++[h++[adj1], h:adj2]) (visited++[(i,j)]) objectives
-                  [adj1,adj2,adj3] -> bfsObjRAux board (tail++[h:adj1, h:adj2, h:adj3]) (visited++[(i,j)]) objectives
-                  [adj1,adj2,adj3,adj4] -> bfsObjRAux board (tail++[h:adj1, h:adj2, h:adj3, h:adj4]) (visited++[(i,j)]) objectives
-                  _ -> bfsObjRAux board tail (visited++[(i,j)]) objectives
+--                   [adj1,adj2] -> bfsObjRAux board (tail++[h++[adj1], h:adj2]) (visited++[(i,j)]) objectives
+--                   [adj1,adj2,adj3] -> bfsObjRAux board (tail++[h:adj1, h:adj2, h:adj3]) (visited++[(i,j)]) objectives
+--                   [adj1,adj2,adj3,adj4] -> bfsObjRAux board (tail++[h:adj1, h:adj2, h:adj3, h:adj4]) (visited++[(i,j)]) objectives
+--                   _ -> bfsObjRAux board tail (visited++[(i,j)]) objectives
                 
