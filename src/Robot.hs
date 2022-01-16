@@ -1,6 +1,6 @@
 module Robot where
 import Random
-import Utils (subNth0, getBoardIndex)
+import Utils (subNth0, getBoardIndex, adjacents)
 import Babies
 
 -- I, J, State
@@ -143,7 +143,8 @@ reactiveAgent board robot babies =
         1 ->
           let
             path = lookForObjectiveR board robot
-            (board', robot', babies) = followPath board robot path 2
+            (board', robot') = followPath board robot path 2
+            in (board', robot', babies)
         2 ->
           let
             path = lookForBabyJail board
@@ -151,3 +152,21 @@ reactiveAgent board robot babies =
             in (board', robot', babies)
         _ -> (board, robot, babies)
 
+
+followPath :: [[Char]] -> Robot -> [(Int,Int)] -> Int -> ([[Char]], Robot)
+followPath board robot path 0 = (board, robot)
+followPath board robot [] steps = (board, robot)
+followPath board robot (nextStep:tail) steps =
+  let
+    (i, j, s) = robotAll robot
+    (di, dj) = nextStep
+    in
+      if adjacents (i,j) (di, dj)
+        then
+          let
+            robot' = Robot di dj s
+            board' = subNth0 board di dj 'R'
+            in
+              followPath board' robot' tail (steps-1)
+        else
+          error "invalid path"

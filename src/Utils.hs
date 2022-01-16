@@ -65,3 +65,9 @@ dirtPerc :: [[Char]] -> Int
 dirtPerc board = let m = length board; n = length board in div (sum (map dirt board)*100) (m*n)
 
 cleanPerc board = 100 - dirtPerc board
+
+
+adjacents :: (Int, Int) -> (Int, Int) -> Bool
+adjacents (i,j) (di, dj)  | i == di = j == (dj-1) || j == (dj+1)
+                          | j == dj = i == (di-1) || i == (di+1)
+                          | otherwise = False
