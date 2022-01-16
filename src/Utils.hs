@@ -1,5 +1,6 @@
 module Utils where
 import Random (runRandom, rand)
+import Data.List
 
 fill x times  | times == 1 = [x]
               | times < 1 = []
@@ -45,6 +46,9 @@ validPos board i j =
     in
       i >= 0 && i < m && j >= 0 && j < n
 
+validPosMap :: ([[Char]], Int, Int) -> Bool
+validPosMap (board, i, j) =
+  validPos board i j
 
 rowDim :: (Foldable f, Num b) => f a -> b
 rowDim = foldr (\ x -> (+) 1) 0
@@ -71,3 +75,13 @@ adjacents :: (Int, Int) -> (Int, Int) -> Bool
 adjacents (i,j) (di, dj)  | i == di = j == (dj-1) || j == (dj+1)
                           | j == dj = i == (di-1) || i == (di+1)
                           | otherwise = False
+
+
+getAdjacents :: [[Char]] -> (Int, Int) -> [(Int, Int)] -> [(Int, Int)]
+getAdjacents board (i,j) visited =
+  let
+    candidates = [(board,i,j+1), (board,i,j-1), (board,i+1,j), (board,i-1,j)]
+    validCandidates =  filter validPosMap candidates
+    validCandidates' = map (\(_,i,j) -> (i,j)) validCandidates
+    in
+      validCandidates' \\ visited
