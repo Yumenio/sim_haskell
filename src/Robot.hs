@@ -41,7 +41,7 @@ moveRightR :: [[Char]] -> Robot -> ([[Char]], Robot)
 moveRightR board robot =
   let
     (i,j,s) = robotAll robot
-    n = length $ head board
+    n = length $ h board
     in
       if j == (n-1)
         then (board,robot)
@@ -99,7 +99,7 @@ findRobot :: [[Char]] -> Int -> (Int, Int)
 findRobot board index =
   let
     m = length board;
-    n = length $ head board;
+    n = length $ h board;
     (i,j) = getBoardIndex board index;
     item = board!!i!!j
     in
@@ -121,7 +121,7 @@ generateRobotsAux board 0 seed robots = (board, robots, seed)
 generateRobotsAux board amount seed robots =
   let
     m = length board;
-    n = length $ head board;
+    n = length $ h board;
     x = runRandom rand seed; xMod = mod x m;
     y = runRandom rand x; yMod = mod y n
     in
@@ -134,23 +134,23 @@ generateRobotsAux board amount seed robots =
             in generateRobotsAux board' (amount-1) y (robot:robots)
 
 
-reactiveAgent :: [[Char]] -> Robot -> [Baby] -> ([[Char]], Robot, [Baby])
-reactiveAgent board robot babies =
-  let
-    (i, j, s) = robotAll robot
-    in
-      case s of
-        1 ->
-          let
-            path = lookForObjectiveR board robot
-            (board', robot') = followPath board robot path 2
-            in (board', robot', babies)
-        2 ->
-          let
-            path = lookForBabyJail board
-            (board', robot') = followPath board robot path 1
-            in (board', robot', babies)
-        _ -> (board, robot, babies)
+-- reactiveAgent :: [[Char]] -> Robot -> [Baby] -> ([[Char]], Robot, [Baby])
+-- reactiveAgent board robot babies =
+--   let
+--     (i, j, s) = robotAll robot
+--     in
+--       case s of
+--         1 ->
+--           let
+--             path = lookForObjectiveR board robot
+--             (board', robot') = followPath board robot path 2
+--             in (board', robot', babies)
+--         2 ->
+--           let
+--             path = lookForBabyJail board
+--             (board', robot') = followPath board robot path 1
+--             in (board', robot', babies)
+--         _ -> (board, robot, babies)
 
 
 followPath :: [[Char]] -> Robot -> [(Int,Int)] -> Int -> ([[Char]], Robot)
@@ -166,7 +166,46 @@ followPath board robot (nextStep:tail) steps =
           let
             robot' = Robot di dj s
             board' = subNth0 board di dj 'R'
+            board'' = subNth0 board' i j 'X'
             in
-              followPath board' robot' tail (steps-1)
+              followPath board'' robot' tail (steps-1)
         else
           error "invalid path"
+
+
+lookForObjectiveR :: [[Char]] -> Robot -> [(Int, Int)]
+lookForObjectiveR board robot =
+  let
+    objectives = ['B', 'C']
+    (i,j,s) = robotAll robot
+    in
+      bfsObjR board objectives (i,j)
+
+bfsObjR :: [[Char]] -> (Int, Int) -> [(Int, Int)]
+bfsObjR board  objectives (i,j) =
+  bfsObjRAux board (i,j) [(i,j)] objectives []
+
+bfsObjRAux :: [[Char]] -> [[(Int, Int)]] -> [(Int, Int)] -> [Char] -> [(Int, Int)]
+bfsObjRAux board queue visited objectives =
+  do
+    let
+      (h:tail) = queue
+      (i,j) = last h
+    if (board!!i!!j) `elem` objectives
+      then
+        h
+      else
+        if length visited >= ((length board * length (head board))-1)
+          then
+            error "objective not found"
+          else
+            let
+              adjs = getAdjacents board (i,j)
+              in
+                case adjs of
+                  [adj1] -> bfsObjRAux board (tail:(h:adj1)) (visited++[(i,j)]) objectives
+                  [adj1,adj2] -> bfsObjRAux board (tail++[h:adj1, h:adj2]) (visited++[(i,j)]) objectives
+                  [adj1,adj2,adj3] -> bfsObjRAux board (tail++[h:adj1, h:adj2, h:adj3]) (visited++[(i,j)]) objectives
+                  [adj1,adj2,adj3,adj4] -> bfsObjRAux board (tail++[h:adj1, h:adj2, h:adj3, h:adj4]) (visited++[(i,j)]) objectives
+                  _ -> bfsObjRAux board tail (visited++[(i,j)]) objectives
+                
