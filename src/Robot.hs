@@ -205,38 +205,39 @@ bfsObjRAux board queue visited objectives =
               in
                 case adjs of
                   [adj1] -> let
-                    newQueue = appendPath tail h adj1
+                    newQueue = appendPath tail h [adj1]
                     in
                       bfsObjRAux board  newQueue visited' objectives
 
                   [adj1,adj2] -> let
-                    newQueue = appendPath tail h adj1
-                    newQueue' = appendPath newQueue h adj2
+                    newQueue = appendPath tail h [adj1,adj2]
+                    -- newQueue' = appendPath newQueue h adj2
                     in
-                      bfsObjRAux board  newQueue' visited' objectives
+                      bfsObjRAux board  newQueue visited' objectives
 
                   [adj1,adj2,adj3] -> let
-                    newQueue = appendPath tail h adj1
-                    newQueue' = appendPath newQueue h adj2
-                    newQueue'' = appendPath newQueue' h adj3
+                    newQueue = appendPath tail h [adj1,adj2,adj3]
+                    -- newQueue' = appendPath newQueue h adj2
+                    -- newQueue'' = appendPath newQueue' h adj3
                     in
-                      bfsObjRAux board  newQueue'' visited' objectives
+                      bfsObjRAux board  newQueue visited' objectives
 
                   [adj1,adj2,adj3,adj4] -> let
-                    newQueue = appendPath tail h adj1
-                    newQueue' = appendPath newQueue h adj2
-                    newQueue'' = appendPath newQueue' h adj3
-                    newQueue''' = appendPath newQueue'' h adj4
+                    newQueue = appendPath tail h [adj1,adj2,adj3,adj4]
+                    -- newQueue' = appendPath newQueue h adj2
+                    -- newQueue'' = appendPath newQueue' h adj3
+                    -- newQueue''' = appendPath newQueue'' h adj4
                     in
-                      bfsObjRAux board  newQueue''' visited' objectives
+                      bfsObjRAux board  newQueue visited' objectives
 
 
                   _ -> bfsObjRAux board tail visited' objectives
 
-appendPath :: [[(Int, Int)]] -> [(Int, Int)] -> (Int, Int) -> [[(Int, Int)]]                
-appendPath queue path newItemForPath =
+appendPath :: [[(Int, Int)]] -> [(Int, Int)] -> [(Int, Int)] -> [[(Int, Int)]]                
+appendPath queue path [] = reverse queue
+appendPath queue path (newItemForPath:rest) =
   let
     newPath = path ++ [newItemForPath]
-    rrrrrr = newPath:queue
+    queue' = newPath:queue
     in
-      reverse rrrrrr
+      appendPath queue' path rest
