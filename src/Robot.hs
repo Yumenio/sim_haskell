@@ -1,6 +1,7 @@
 module Robot where
 import Random
 import Utils (subNth0, getBoardIndex)
+import Babies
 
 -- I, J, State
 data Robot = Robot { robotRow :: Int, robotCol :: Int, robotState :: Int} deriving (Show)
@@ -131,3 +132,22 @@ generateRobotsAux board amount seed robots =
             board' = subNth0 board xMod yMod 'R'
             robot = Robot xMod yMod 0
             in generateRobotsAux board' (amount-1) y (robot:robots)
+
+
+reactiveAgent :: [[Char]] -> Robot -> [Baby] -> ([[Char]], Robot, [Baby])
+reactiveAgent board robot babies =
+  let
+    (i, j, s) = robotAll robot
+    in
+      case s of
+        1 ->
+          let
+            path = lookForObjectiveR board robot
+            (board', robot', babies) = followPath board robot path 2
+        2 ->
+          let
+            path = lookForBabyJail board
+            (board', robot') = followPath board robot path 1
+            in (board', robot', babies)
+        _ -> (board, robot, babies)
+
