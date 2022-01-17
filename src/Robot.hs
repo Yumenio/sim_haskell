@@ -148,8 +148,16 @@ reactiveAgent board robot babies =
         2 ->
           let
             path = lookForBabyJail board robot
-            (board', robot') = followPath board robot path 1
-            in (board', robot', babies)
+            l = length path
+            in
+              if l == 2
+                then
+                  let
+                    (board', robot', babies') = depositBaby board robot babies
+                    in (board', robot', babies') --mejorable
+                else
+                  let (board', robot') = followPath board robot path 1
+                  in (board', robot', babies)
         _ -> (board, robot, babies)
 
 
