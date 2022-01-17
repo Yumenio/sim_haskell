@@ -48,7 +48,7 @@ validPos board i j =
 
 validPosMap :: ([[Char]], Int, Int) -> Bool
 validPosMap (board, i, j) =
-  validPos board i j
+  validPos board i j && board!!i!!j/='O'
 
 rowDim :: (Foldable f, Num b) => f a -> b
 rowDim = foldr (\ x -> (+) 1) 0

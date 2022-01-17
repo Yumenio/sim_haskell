@@ -239,9 +239,11 @@ bfsGenericObj board queue visited objectives =
     let
       (h:tail) = queue
       (i,j) = last h
+
     if (board!!i!!j) `elem` objectives
       then
-        h
+        do
+          h
       else
         if length visited >= ((length board * length (head board))-1)
           then
@@ -275,11 +277,12 @@ bfsGenericObj board queue visited objectives =
 
                   _ -> bfsGenericObj board tail visited' objectives
 
+
 appendPath :: [[(Int, Int)]] -> [(Int, Int)] -> [(Int, Int)] -> [[(Int, Int)]]                
-appendPath queue path [] = reverse queue
+appendPath queue path [] = queue
 appendPath queue path (newItemForPath:rest) =
   let
     newPath = path ++ [newItemForPath]
-    queue' = newPath:queue
+    queue' = queue ++ [newPath]
     in
       appendPath queue' path rest
