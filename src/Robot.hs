@@ -131,7 +131,7 @@ generateRobotsAux board amount seed robots =
         else
           let
             board' = subNth0 board xMod yMod 'R'
-            robot = Robot xMod yMod 0
+            robot = Robot xMod yMod 1
             in generateRobotsAux board' (amount-1) y (robot:robots)
 
 
@@ -143,7 +143,7 @@ reactiveAgent board robot babies =
       case s of
         1 ->
           let
-            path = lookForObjectiveR board robot
+            _:path = lookForObjectiveR board robot
             (board', robot') = followPath board robot path 2
             in (board', robot', babies)
         2 ->

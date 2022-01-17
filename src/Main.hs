@@ -66,41 +66,52 @@ generateObstaclesAux board amount seed  | amount == 0 = (board, seed)
 simulate :: Int -> Int -> Int -> IO()
 simulate m n seed =
   do
-    let 
+    let
+      t = 2
       x = 'X'
       perc = 10
       board = initBoard m n x
-      (board', seed') = generateObstacles board perc seed
-      board'' = genBabyJail board' 3 0
-      (board''', robots, seed'') = generateRobots board'' 2 seed'
-      (board4, robots', _) = moveRobots board''' robots seed''
-    pprint board'''
-    pprint board4
+      (board', babies, seed') = generateEnvironment board seed perc
+      (fullBoard, robots, seed'') = generateRobots board' 1 seed'
+    print "Initial board:"
+    pprint fullBoard
+      
+    let
+      (envBoard, babies', seed''') = simulateEnvironment 1 fullBoard babies seed''
+    print "Board after environment sim:"
+    pprint envBoard
 
-generateEnvironment m n seed =
+    let
+      robot = head robots
+      (reacBoard, robot', babies'') = reactiveAgent envBoard robot babies'
+
+    print "Board after reactive agent"
+    pprint reacBoard
+
+generateEnvironment board seed perc =
   do
     let
       x = 'X'
       perc = 10
-      t = 2
-      board = initBoard m n x
+      -- t = 2
+      -- board = initBoard m n x
       (dirtiedBoard, seed') = generateInitialDirt board 7 seed
       (board', seed'') = generateObstacles dirtiedBoard perc seed'
       board'' = genBabyJail board' 3 0
       (board''', babies, seed''') = generateBabies board'' 3 seed''
       in
-        simulateEnvironment t board''' babies seed''
+        (board''', babies, seed''')
+        -- simulateEnvironment t board''' babies seed''
 
 
-simulateEnvironment :: Int -> [[Char]] -> [Baby] -> Int -> IO ()
-simulateEnvironment 0 board babies seed = pprint board
+simulateEnvironment :: Int -> [[Char]] -> [Baby] -> Int -> ([[Char]], [Baby], Int)
+simulateEnvironment 0 board babies seed = (board, babies, seed)
 simulateEnvironment cycles board babies seed =
-  do
-    pprint board
-    let
-      (dirtiedBoard, seed') = generateSimpleDirt board babies seed
-      (board', babies', seed'') = moveBabies dirtiedBoard babies seed'
-    simulateEnvironment (cycles-1) board' babies' seed''
+  let
+    (dirtiedBoard, seed') = generateSimpleDirt board babies seed
+    (board', babies', seed'') = moveBabies dirtiedBoard babies seed'
+    in
+      simulateEnvironment (cycles-1) board' babies' seed''
 
 
 main :: IO ()
