@@ -2,68 +2,86 @@ module Babies where
 import Utils (subNth0, getBoardIndex, randomAdj)
 import Random (rand, runRandom)
 
-data Baby = Baby {babyRow :: Int, babyCol :: Int} deriving (Show, Eq)
+data Baby = Baby {babyRow :: Int, babyCol :: Int, babyState :: Int} deriving (Show, Eq)
 
 babyCoor :: Baby -> (Int, Int)
 babyCoor baby = (babyRow baby, babyCol baby)
 
+babyAll :: Baby -> (Int, Int, Int)
+babyAll baby = (babyRow baby, babyCol baby, babyState baby)
 
 moveLeftB :: [[Char ]] -> Baby -> ([[Char]], Baby)
 moveLeftB board baby =
   let
-    (i,j) = babyCoor baby
+    (i,j,s) = babyAll baby
     in
-      if j == 0
-        then (board,baby)
+      if s /= 1
+        then
+          error "Baby is not free"
         else
-          let
-            board' = moveAnyB board i j 0 (-1) 'X'
-            baby' = Baby i (j-1)
-            in (board', baby')
+          if j == 0
+            then (board,baby)
+            else
+              let
+                board' = moveAnyB board i j 0 (-1) 'X'
+                baby' = Baby i (j-1) s
+                in (board', baby')
 
 
 moveUpB :: [[Char ]] -> Baby -> ([[Char]], Baby)
 moveUpB board baby =
   let
-    (i,j) = babyCoor baby
+    (i,j,s) = babyAll baby
     in
-      if i == 0
-        then (board,baby)
+      if s /= 1
+        then
+          error "Baby is not free"
         else
-          let
-            board' = moveAnyB board i j (-1) 0 'X'
-            baby' = Baby (i-1) j
-            in (board', baby')
+          if i == 0
+            then (board,baby)
+            else
+              let
+                board' = moveAnyB board i j (-1) 0 'X'
+                baby' = Baby (i-1) j s
+                in (board', baby')
 
 
 moveRightB :: [[Char]] -> Baby -> ([[Char]], Baby)
 moveRightB board baby =
   let
-    (i,j) = babyCoor baby
+    (i,j,s) = babyAll baby
     n = length $ head board
     in
-      if j == (n-1)
-        then (board,baby)
+      if s /= 1
+        then
+          error "Baby is not free"
         else
-          let
-            board' = moveAnyB board i j 0 1 'X'
-            baby' = Baby i (j+1)
-            in (board', baby')
+          if j == (n-1)
+            then (board,baby)
+            else
+              let
+                board' = moveAnyB board i j 0 1 'X'
+                baby' = Baby i (j+1) s
+                in (board', baby')
 
 
 moveDownB :: [[Char]] -> Baby -> ([[Char]], Baby)
 moveDownB board baby =
   let
-    (i,j) = babyCoor baby
+    (i,j,s) = babyAll baby
     m = length board
     in
-      if i == m
-        then (board,baby)
+      if s /= 1
+        then
+          error "Baby is not free"
         else
-          let
-            board' = moveAnyB board i j 1 0 'X'
-            baby' = Baby (i+1) j
-            in (board', baby')
+          if i == m
+            then (board,baby)
+            else
+              let
+                board' = moveAnyB board i j 1 0 'X'
+                baby' = Baby (i+1) j s
+                in (board', baby')
 
 
 -- cleanR board i j = 
@@ -118,17 +136,24 @@ generateBabiesAux board amount seed babies =
         else
           let
             board' = subNth0 board xMod yMod 'B'
-            baby = Baby xMod yMod
+            baby = Baby xMod yMod 1
             in generateBabiesAux board' (amount-1) y (baby:babies)
 
 moveBabies :: [[Char]] -> [Baby] -> Int -> ([[Char]], [Baby], Int)
 moveBabies board [] seed = (board, [], seed)
 moveBabies board (baby:bs) seed =
   let
-    (board', baby', seed') = moveBaby board baby seed
-    (board'', bs', seed'') = moveBabies board' bs seed'
+    (_,_,s) = babyAll baby
     in
-      (board'', baby':bs', seed'')
+      if s == 1
+        then
+          let
+            (board', baby', seed') = moveBaby board baby seed
+            (board'', bs', seed'') = moveBabies board' bs seed'
+            in
+              (board'', baby':bs', seed'')
+        else
+          moveBabies board bs seed
 
 moveBaby :: [[Char]] -> Baby -> Int -> ([[Char]], Baby, Int)
 moveBaby board baby seed = moveBabyAux board baby seed 4
@@ -137,7 +162,7 @@ moveBabyAux :: [[Char]] -> Baby -> Int -> Int -> ([[Char]], Baby, Int)
 moveBabyAux board baby seed 0 = (board, baby, seed)
 moveBabyAux board baby seed try =
   let
-    (i,j) = babyCoor baby
+    (i,j,s) = babyAll baby
     (i', j', seed') = randomAdj board i j seed
     in
       if canMoveB board i' j'
@@ -145,7 +170,7 @@ moveBabyAux board baby seed try =
           let
             board' = subNth0 board i' j' 'B'
             board'' = subNth0 board' i j 'X' --clear the old position
-            baby' = Baby i' j'
+            baby' = Baby i' j' 1
             in
               (board'', baby', seed')
         else
@@ -156,10 +181,10 @@ generateSimpleDirt :: [[Char]] -> [Baby] -> Int -> ([[Char]], Int)
 generateSimpleDirt board [] seed = (board, seed)
 generateSimpleDirt board (baby:bs) seed =
   let
-    (i,j) = babyCoor baby
+    (i,j,s) = babyAll baby
     (i', j', seed') = randomAdj board i j seed
     in
-      if board!!i'!!j' /= 'X'
+      if s == 2 || board!!i'!!j' /= 'X'
         then
           generateSimpleDirt board bs seed'
         else

@@ -2,7 +2,7 @@ module Main where
 import System.Random
 import Distribution.Simple.Program.HcPkg (list)
 import Random
-import Utils (initBoard, getBoardIndex, pprint, subNth0)
+import Utils (initBoard, getBoardIndex, pprint, subNth0, cleanPerc)
 import Robot
 import Babies
 
@@ -67,7 +67,7 @@ simulate :: Int -> Int -> Int -> IO()
 simulate m n seed =
   do
     let
-      t = 2
+      t = 10
       x = 'X'
       perc = 10
       board = initBoard m n x
@@ -75,18 +75,38 @@ simulate m n seed =
       (fullBoard, robots, seed'') = generateRobots board' 1 seed'
     print "Initial board:"
     pprint fullBoard
-      
-    let
-      (envBoard, babies', seed''') = simulateEnvironment 1 fullBoard babies seed''
-    print "Board after environment sim:"
-    pprint envBoard
 
-    let
-      robot = head robots
-      (reacBoard, robot', babies'') = reactiveAgent envBoard robot babies'
+    simulationLoop t fullBoard robots babies seed''      
+    
 
-    print "Board after reactive agent"
-    pprint reacBoard
+simulationLoop :: Int -> [[Char]] -> [Robot] -> [Baby] -> Int -> IO ()
+simulationLoop 0 board robots babies seed = return ()
+simulationLoop t board robots babies seed =
+  do
+    print "CYCLE"
+    print t
+    let
+      cleanPercentage = cleanPerc board
+      in
+        if cleanPercentage > 98
+          then
+            print "OBJECTIVE COMPLETE"
+          else
+            do
+              let
+                (envBoard, babies', seed') = simulateEnvironment 1 board babies seed
+
+              print "Board after environment sim:"
+              pprint envBoard
+
+              let
+                robot = head robots
+                (reacBoard, robot', babies'') = reactiveAgent envBoard robot babies'
+
+              print "Board after reactive agent"
+              pprint reacBoard
+              simulationLoop (t-1) reacBoard [robot'] babies'' seed'
+
 
 generateEnvironment board seed perc =
   do

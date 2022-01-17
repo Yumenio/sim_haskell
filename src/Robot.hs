@@ -144,8 +144,22 @@ reactiveAgent board robot babies =
         1 ->
           let
             _:path = lookForObjectiveR board robot
+            l = length path
+            (di, dj) = last path
             (board', robot') = followPath board robot path 2
-            in (board', robot', babies)
+            in
+              if l == 2 && board!!di!!dj=='B'
+                then
+                  let
+                    robot'' = Robot di dj 2
+                    nbaby = Baby di dj 2
+                    carriedBaby = findBabyAt (di, dj) babies
+                    babies' = delete carriedBaby babies
+                    babies'' = nbaby:babies'
+                    in
+                      (board', robot'', babies'')
+                else
+                  (board', robot', babies)
         2 ->
           let
             path = lookForBabyJail board robot
@@ -163,7 +177,7 @@ reactiveAgent board robot babies =
                     (desti, destj) = path!!1
                     carriedBaby = findBabyAt (desti, destj) babies
                     babies' = delete carriedBaby babies
-                    nbaby = Baby desti destj
+                    nbaby = Baby desti destj 2
                     babies'' = nbaby:babies'
                     (board', robot') = followPath board robot path 1
                   in (board', robot', babies'')
