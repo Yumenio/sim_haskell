@@ -162,7 +162,7 @@ reactiveAgent board robot babies =
                   (board', robot', babies)
         2 ->
           let
-            path = lookForBabyJail board robot
+            _:path = lookForBabyJail board robot
             l = length path
             in
               if l == 2
@@ -248,6 +248,7 @@ bfsObjR board  objectives (i,j) =
   bfsGenericObj board [[(i,j)]] [(i,j)] objectives
 
 bfsGenericObj :: [[Char]] -> [[(Int, Int)]] -> [(Int, Int)] -> [Char] -> [(Int, Int)]
+bfsGenericObj board [] visited objectives = []
 bfsGenericObj board queue visited objectives =
   do
     let
@@ -259,7 +260,70 @@ bfsGenericObj board queue visited objectives =
         do
           h
       else
-        if length visited >= ((length board * length (head board))-1)
+        let
+          adjs = getAdjacents board (i,j) visited
+          visited' = ((i,j):visited)
+          in
+            case adjs of
+              [adj1] -> let
+                newQueue = appendPath tail h [adj1]
+                in
+                  bfsGenericObj board  newQueue visited' objectives
+
+              [adj1,adj2] -> let
+                newQueue = appendPath tail h [adj1,adj2]
+                in
+                  bfsGenericObj board  newQueue visited' objectives
+
+              [adj1,adj2,adj3] -> let
+                newQueue = appendPath tail h [adj1,adj2,adj3]
+                in
+                  bfsGenericObj board  newQueue visited' objectives
+
+              [adj1,adj2,adj3,adj4] -> let
+                newQueue = appendPath tail h [adj1,adj2,adj3,adj4]
+                in
+                  bfsGenericObj board  newQueue visited' objectives
+
+
+              _ -> bfsGenericObj board tail visited' objectives
+
+
+appendPath :: [[(Int, Int)]] -> [(Int, Int)] -> [(Int, Int)] -> [[(Int, Int)]]                
+appendPath queue path [] = queue
+appendPath queue path (newItemForPath:rest) =
+  let
+    newPath = path ++ [newItemForPath]
+    queue' = queue ++ [newPath]
+    in
+      appendPath queue' path rest
+
+
+
+
+
+bfsGenericObjIO :: [[Char]] -> [[(Int, Int)]] -> [(Int, Int)] -> [Char] -> IO [(Int, Int)]
+bfsGenericObjIO board [] visited objectives = do
+  print "No path found"
+  return []
+bfsGenericObjIO board queue visited objectives =
+  do
+    let
+      (h:tail) = queue
+      (i,j) = last h
+
+    print "actual queue ="
+    print queue
+    print "Analizing head:"
+    print h
+    if (board!!i!!j) `elem` objectives
+      then
+        do
+          print "Found!!"
+          return h
+      else
+        -- if length visited >= (length board * length (head board))
+        if False
           then
             error "objective not found"
           else
@@ -271,32 +335,41 @@ bfsGenericObj board queue visited objectives =
                   [adj1] -> let
                     newQueue = appendPath tail h [adj1]
                     in
-                      bfsGenericObj board  newQueue visited' objectives
+                      do
+                        print "new queue="
+                        pprintQueue newQueue
+                        bfsGenericObjIO board  newQueue visited' objectives
 
                   [adj1,adj2] -> let
                     newQueue = appendPath tail h [adj1,adj2]
                     in
-                      bfsGenericObj board  newQueue visited' objectives
+                      do
+                        print "new queue="
+                        pprintQueue newQueue
+                        bfsGenericObjIO board  newQueue visited' objectives
 
                   [adj1,adj2,adj3] -> let
                     newQueue = appendPath tail h [adj1,adj2,adj3]
                     in
-                      bfsGenericObj board  newQueue visited' objectives
+                      do
+                        print "new queue="
+                        pprintQueue newQueue
+                        bfsGenericObjIO board  newQueue visited' objectives
 
                   [adj1,adj2,adj3,adj4] -> let
                     newQueue = appendPath tail h [adj1,adj2,adj3,adj4]
                     in
-                      bfsGenericObj board  newQueue visited' objectives
+                      do
+                        print "new queue="
+                        pprintQueue newQueue
+                        bfsGenericObjIO board  newQueue visited' objectives
 
 
-                  _ -> bfsGenericObj board tail visited' objectives
+                  _ -> bfsGenericObjIO board tail visited' objectives
 
-
-appendPath :: [[(Int, Int)]] -> [(Int, Int)] -> [(Int, Int)] -> [[(Int, Int)]]                
-appendPath queue path [] = queue
-appendPath queue path (newItemForPath:rest) =
-  let
-    newPath = path ++ [newItemForPath]
-    queue' = queue ++ [newPath]
-    in
-      appendPath queue' path rest
+pprintQueue :: [[(Int, Int)]] -> IO ()
+pprintQueue [] = return ()
+pprintQueue (path:queueTail) =
+  do
+    print path
+    pprintQueue queueTail
