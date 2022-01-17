@@ -2,7 +2,7 @@ module Babies where
 import Utils (subNth0, getBoardIndex, randomAdj)
 import Random (rand, runRandom)
 
-data Baby = Baby {babyRow :: Int, babyCol :: Int} deriving (Show)
+data Baby = Baby {babyRow :: Int, babyCol :: Int} deriving (Show, Eq)
 
 babyCoor :: Baby -> (Int, Int)
 babyCoor baby = (babyRow baby, babyCol baby)

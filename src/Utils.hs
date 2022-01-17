@@ -85,3 +85,6 @@ getAdjacents board (i,j) visited =
     validCandidates' = map (\(_,i,j) -> (i,j)) validCandidates
     in
       validCandidates' \\ visited
+
+
+  

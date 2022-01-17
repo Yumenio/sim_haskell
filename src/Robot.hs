@@ -2,6 +2,7 @@ module Robot where
 import Random
 import Utils (subNth0, getBoardIndex, adjacents, getAdjacents)
 import Babies
+import Data.List
 
 -- I, J, State
 data Robot = Robot { robotRow :: Int, robotCol :: Int, robotState :: Int} deriving (Show)
@@ -153,11 +154,19 @@ reactiveAgent board robot babies =
               if l == 2
                 then
                   let
-                    (board', robot', babies') = depositBaby board robot babies
+                    dest = last path
+                    (board', robot', babies') = depositBaby board robot babies dest
                     in (board', robot', babies') --mejorable
                 else
-                  let (board', robot') = followPath board robot path 1
-                  in (board', robot', babies)
+                  let
+                    src = head path
+                    (desti, destj) = path!!1
+                    carriedBaby = findBabyAt (desti, destj) babies
+                    babies' = delete carriedBaby babies
+                    nbaby = Baby desti destj
+                    babies'' = nbaby:babies'
+                    (board', robot') = followPath board robot path 1
+                  in (board', robot', babies'')
         _ -> (board, robot, babies)
 
 
@@ -180,6 +189,30 @@ followPath board robot (nextStep:tail) steps =
         else
           error "invalid path"
 
+depositBaby :: [[Char]] -> Robot -> [Baby] -> (Int, Int) -> ([[Char]], Robot, [Baby])
+depositBaby board robot babies (di, dj)=
+  let
+    (i,j,_) = robotAll robot
+    carriedBaby = findBabyAt (i,j) babies
+    babies' = delete carriedBaby babies
+    board' = subNth0 board di dj 'Z'
+    robot' = Robot i j 1
+    in
+      (board', robot', babies')
+
+
+
+findBabyAt :: (Int, Int) -> [Baby] -> Baby
+findBabyAt (i, j) [] = error "No baby is being carried"
+findBabyAt (i, j) (baby:btail) =
+  let
+    (bi, bj) = babyCoor baby
+    in
+      if i==bi && j==bj
+        then
+          baby
+        else
+          findBabyAt (i,j) btail
 
 lookForObjectiveR :: [[Char]] -> Robot -> [(Int, Int)]
 lookForObjectiveR board robot =
