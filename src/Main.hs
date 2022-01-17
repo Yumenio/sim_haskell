@@ -102,7 +102,8 @@ simulationLoop t board robots babies seed =
               let
                 robot = head robots
                 (reacBoard, robot', babies'') = reactiveAgent envBoard robot babies'
-
+              print babies'
+              print babies''
               print "Board after reactive agent"
               pprint reacBoard
               simulationLoop (t-1) reacBoard [robot'] babies'' seed'

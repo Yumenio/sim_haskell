@@ -148,24 +148,24 @@ reactiveAgent board robot babies =
             (di, dj) = last path
             (board', robot') = followPath board robot path 2
             in
-              if l == 2 && board!!di!!dj=='B'
+              if l <= 2 && board!!di!!dj=='B'
                 then
                   let
                     robot'' = Robot di dj 2
                     nbaby = Baby di dj 2
                     carriedBaby = findBabyAt (di, dj) babies
                     babies' = delete carriedBaby babies
-                    babies'' = nbaby:babies'
+                    babies'' = nbaby:babies
                     in
                       (board', robot'', babies'')
                 else
                   (board', robot', babies)
         2 ->
           let
-            _:path = lookForBabyJail board robot
+            src:path = lookForBabyJail board robot
             l = length path
             in
-              if l == 2
+              if l == 1
                 then
                   let
                     dest = last path
@@ -173,12 +173,12 @@ reactiveAgent board robot babies =
                     in (board', robot', babies') --mejorable
                 else
                   let
-                    src = head path
-                    (desti, destj) = path!!1
-                    carriedBaby = findBabyAt (desti, destj) babies
-                    babies' = delete carriedBaby babies
+                    (srci, srcj) = src
+                    (desti, destj) = head path
                     nbaby = Baby desti destj 2
-                    babies'' = nbaby:babies'
+                    carriedBaby = findBabyAt (srci, srcj) babies
+                    babies' = delete carriedBaby babies
+                    babies'' = nbaby:babies
                     (board', robot') = followPath board robot path 1
                   in (board', robot', babies'')
         _ -> (board, robot, babies)
@@ -217,7 +217,7 @@ depositBaby board robot babies (di, dj)=
 
 
 findBabyAt :: (Int, Int) -> [Baby] -> Baby
-findBabyAt (i, j) [] = error "No baby is being carried"
+findBabyAt (i, j) [] = error $ show (i,j)
 findBabyAt (i, j) (baby:btail) =
   let
     (bi, bj) = babyCoor baby
