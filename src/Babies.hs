@@ -153,7 +153,10 @@ moveBabies board (baby:bs) seed =
             in
               (board'', baby':bs', seed'')
         else
-          moveBabies board (baby:bs) seed
+          let
+            (board', bs', seed') = moveBabies board bs seed
+            in
+              (board', baby:bs', seed')
 
 moveBaby :: [[Char]] -> Baby -> Int -> ([[Char]], Baby, Int)
 moveBaby board baby seed = moveBabyAux board baby seed 4
