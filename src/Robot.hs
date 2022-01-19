@@ -313,73 +313,47 @@ appendPath queue path (newItemForPath:rest) =
       appendPath queue' path rest
 
 
+dfsOptimalPath :: [[Char]] -> (Int, Int) -> [(Int, Int)] -> ([(Int, Int)],Int) -> ([(Int, Int)], Int) -> ([(Int, Int)], Int)
+dfsOptimalPath board node visited (current_path, current_value) (best_path, best_value) =
+  let
+    (i,j) = node
+    item = board!!i!!j
+    in
+      if item == 'O' || item == 'Z' || node `elem` visited
+        then (best_path, best_value)
+        else
+          let
+            value = if item == 'X' then -1 else if item == 'C' then 5 else if item == 'B' then 50 else -1000 -- -1000 stands for...idk, but just in case
+            visited' = (i,j):visited
+            current_path' = current_path++[(i,j)]
+            current_value' = current_value + value
+            adjs = getAdjacents board (i,j) visited'
+            (best_path', best_value') = if current_value' > best_value then (current_path', current_value') else (best_path, best_value)
+            in case adjs of
+              [] -> (best_path', best_value')
+              _  -> let
+                fixed_adjs = dfsRecTuples adjs board visited (current_path', current_value') (best_path', best_value')
+                adj_best_paths = map dfsOptimalPath fixed_adjs
+                in bestDfsPath adj_best_paths
+
+-- receives a list of tuples (path, path_value) and return the path with the highest value
+bestDfsPath :: [([(Int, Int)], Int)] -> ([(Int, Int)], Int)
+bestDfsPath [l] = l
+bestDfsPath paths =
+  let
+    max:rec_paths = paths  -- assume max is the current, look for the max recursively and then compare the max of the tail with the current, assumed as the max
+    (max_p, max_v) = max
+    (max_rec_path, max_rec_value) = bestDfsPath rec_paths
+    in
+      if max_v >= max_rec_value
+        then
+          (max_p, max_v)
+        else
+          (max_rec_path, max_rec_value)
 
 
-
-bfsGenericObjIO :: [[Char]] -> [[(Int, Int)]] -> [(Int, Int)] -> [Char] -> IO [(Int, Int)]
-bfsGenericObjIO board [] visited objectives = do
-  print "No path found"
-  return []
-bfsGenericObjIO board queue visited objectives =
-  do
-    let
-      (h:tail) = queue
-      (i,j) = last h
-
-    print "actual queue ="
-    print queue
-    print "Analizing head:"
-    print h
-    if (board!!i!!j) `elem` objectives
-      then
-        do
-          print "Found!!"
-          return h
-      else
-        -- if length visited >= (length board * length (head board))
-        if False
-          then
-            error "objective not found"
-          else
-            let
-              adjs = getAdjacents board (i,j) visited
-              visited' = ((i,j):visited)
-              in
-                case adjs of
-                  [adj1] -> let
-                    newQueue = appendPath tail h [adj1]
-                    in
-                      do
-                        print "new queue="
-                        pprintQueue newQueue
-                        bfsGenericObjIO board  newQueue visited' objectives
-
-                  [adj1,adj2] -> let
-                    newQueue = appendPath tail h [adj1,adj2]
-                    in
-                      do
-                        print "new queue="
-                        pprintQueue newQueue
-                        bfsGenericObjIO board  newQueue visited' objectives
-
-                  [adj1,adj2,adj3] -> let
-                    newQueue = appendPath tail h [adj1,adj2,adj3]
-                    in
-                      do
-                        print "new queue="
-                        pprintQueue newQueue
-                        bfsGenericObjIO board  newQueue visited' objectives
-
-                  [adj1,adj2,adj3,adj4] -> let
-                    newQueue = appendPath tail h [adj1,adj2,adj3,adj4]
-                    in
-                      do
-                        print "new queue="
-                        pprintQueue newQueue
-                        bfsGenericObjIO board  newQueue visited' objectives
-
-
-                  _ -> bfsGenericObjIO board tail visited' objectives
+dfsRecTuples :: [(Int, Int)] -> [[Char]] -> [(Int, Int)] -> ([(Int, Int)], Int) -> ([(Int, Int)], Int) -> [([[Char]], (Int, Int), [(Int, Int)], ([(Int, Int)], Int), ([(Int, Int)], Int))]
+dfsRecTuples node board visited currentPath bestPath = (board, node, visited, currentPath, bestPath)
 
 pprintQueue :: [[(Int, Int)]] -> IO ()
 pprintQueue [] = return ()
