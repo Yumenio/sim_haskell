@@ -102,8 +102,9 @@ simulationLoop t board robots babies seed =
 
               let
                 robot = head robots
-                (reacBoard, robot', babies'') = reactiveAgent envBoard robot babies'
-              print "Board after reactive agent"
+                -- (reacBoard, robot', babies'') = reactiveAgent envBoard robot babies'
+                (reacBoard, robot', babies'') = modelBasedAgent envBoard robot babies'
+              print "Board after agent"
               print babies''
               pprint reacBoard
               simulationLoop (t-1) reacBoard [robot'] babies'' seed'
@@ -117,7 +118,7 @@ generateEnvironment board seed perc =
       m = length board
       n = length $ head board
       -- babyCount = 1 + div (m*n*10) 100
-      babyCount = 3
+      babyCount = 1
       -- t = 2
       -- board = initBoard m n x
       (dirtiedBoard, seed') = generateInitialDirt board 7 seed

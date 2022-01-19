@@ -333,26 +333,31 @@ modelBasedAgent board robot babies =
           1 ->
             if jail_reachable
               then let
-                (path, value) = dfsOptimalPath (board, (i,j), [], ([],0), ([],-10000))
-                l = length path
-                (di, dj) = last path
-                (board', robot') = followPath board robot path 2
+                (opt_path, value) = dfsOptimalPath (board, (i,j), [], ([],0), ([],-10000))
                 in
-                  if l <= 2 && board!!di!!dj == 'B'
-                    then
-                      let
-                        robot'' = Robot di dj 2
-                        nbaby = Baby di dj 2
-                        carriedBaby = findBabyAt (di, dj) babies
-                        babies' = delete carriedBaby babies
-                        babies'' = nbaby:babies'
-                        in
-                          (board', robot'', babies'')
-                    else
-                      (board', robot', babies)
-              else let
+                  if null opt_path
+                    then (board, robot, babies)
+                    else let
+                      src:path = opt_path
+                      -- l = length path
+                      (di, dj) = head path
+                      (board', robot') = followPath board robot path 1
+                      in
+                        if board!!di!!dj == 'B'
+                          then
+                            let
+                              robot'' = Robot di dj 2
+                              nbaby = Baby di dj 2
+                              carriedBaby = findBabyAt (di, dj) babies
+                              babies' = delete carriedBaby babies
+                              babies'' = nbaby:babies'
+                              in
+                                (board', robot'', babies'')
+                          else
+                            (board', robot', babies)
+              else let --dfs ignoring the babies, since the jail is no longer accesible
                 (path, value) = dfsOptimalPathNoBaby (board, (i,j), [], ([],0), ([],-10000))
-                (board', robot') = followPath board robot path 2
+                (board', robot') = followPath board robot path 1
                 in (board', robot', babies)
           
 
@@ -389,6 +394,72 @@ modelBasedAgent board robot babies =
                 (board, robot, babies)
           _ -> (board, robot, babies)
 
+modelBasedAgentIO :: [[Char]] -> Robot -> [Baby] -> IO ([[Char]], Robot, [Baby])
+modelBasedAgentIO board robot babies =
+  do
+    let
+      (i,j,s) = robotAll robot
+      jail_reachable = jailReachable board robot
+      in
+        case s of
+          1 ->
+            if jail_reachable
+              then let
+                (path, value) = dfsOptimalPath (board, (i,j), [], ([],0), ([],-10000))
+                l = length path
+                (di, dj) = last path
+                (board', robot') = followPath board robot path 2
+                in
+                  if l <= 2 && board!!di!!dj == 'B'
+                    then
+                      let
+                        robot'' = Robot di dj 2
+                        nbaby = Baby di dj 2
+                        carriedBaby = findBabyAt (di, dj) babies
+                        babies' = delete carriedBaby babies
+                        babies'' = nbaby:babies'
+                        in
+                          return (board', robot'', babies'')
+                    else
+                      return (board', robot', babies)
+              else let
+                (path, value) = dfsOptimalPathNoBaby (board, (i,j), [], ([],0), ([],-10000))
+                (board', robot') = followPath board robot path 2
+                in return (board', robot', babies)
+          
+
+          2 ->
+            if jail_reachable
+              then let
+                objPath = lookForBabyJail board robot
+                in
+                  if null objPath
+                    then
+                      return (board, robot, babies)
+                    else
+                      let
+                        src:path = objPath
+                        l = length path
+                        in
+                          if l == 1
+                            then
+                              let
+                                dest = last path
+                                (board', robot', babies') = depositBaby board robot babies dest
+                                in return (board', robot', babies') --mejorable
+                            else
+                              let
+                                (srci, srcj) = src
+                                (desti, destj) = head path
+                                nbaby = Baby desti destj 2
+                                carriedBaby = findBabyAt (srci, srcj) babies
+                                babies' = delete carriedBaby babies
+                                babies'' = nbaby:babies'
+                                (board', robot') = followPath board robot path 1
+                              in return (board', robot', babies'')
+              else  -- acá tocaría soltar rápido al bebé de ser posible, pero kepereza
+                return (board, robot, babies)
+          _ -> return (board, robot, babies)
 
 
 
