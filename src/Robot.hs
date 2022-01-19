@@ -313,6 +313,14 @@ appendPath queue path (newItemForPath:rest) =
       appendPath queue' path rest
 
 
+modelBasedAgent :: [[Char]] -> Robot -> IO ()
+modelBasedAgent board robot =
+  do
+    let
+      (i,j,s) = robotAll robot
+      (path, value) = dfsOptimalPath (board, (i,j), [], ([],0), ([],-10000))
+    print "Best path found:"
+    print path
 
 -- dfsOptimalPath :: [[Char]] -> (Int, Int) -> [(Int, Int)] -> ([(Int, Int)],Int) -> ([(Int, Int)], Int) -> ([(Int, Int)], Int)
 dfsOptimalPath :: ([[Char]], (Int, Int), [(Int, Int)], ([(Int, Int)],Int), ([(Int, Int)], Int)) -> ([(Int, Int)], Int)
@@ -334,7 +342,7 @@ dfsOptimalPath (board, node, visited, (current_path, current_value), (best_path,
             in case adjs of
               [] -> (best_path', best_value')
               _  -> let
-                fixed_adjs = dfsRecTuples adjs board visited (current_path', current_value') (best_path', best_value')
+                fixed_adjs = dfsRecTuples adjs board visited' (current_path', current_value') (best_path', best_value')
                 adj_best_paths = map dfsOptimalPath fixed_adjs
                 in bestDfsPath adj_best_paths
 
