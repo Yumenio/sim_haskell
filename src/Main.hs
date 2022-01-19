@@ -63,11 +63,11 @@ generateObstaclesAux board amount seed  | amount == 0 = (board, seed)
                                             in generateObstaclesAux nboard (amount-1) y 
 
 
-simulate :: Int -> Int -> Int -> IO()
-simulate m n seed =
+simulate :: Int -> Int -> Int -> Int -> IO()
+simulate m n cycles seed =
   do
     let
-      t = 10
+      t = cycles
       x = 'X'
       perc = 10
       board = initBoard m n x
@@ -88,7 +88,7 @@ simulationLoop t board robots babies seed =
     let
       cleanPercentage = cleanPerc board
       in
-        if cleanPercentage > 98
+        if cleanPercentage > 100
           then
             print "OBJECTIVE COMPLETE"
           else
@@ -97,14 +97,14 @@ simulationLoop t board robots babies seed =
                 (envBoard, babies', seed') = simulateEnvironment 1 board babies seed
 
               print "Board after environment sim:"
+              print babies'
               pprint envBoard
 
               let
                 robot = head robots
                 (reacBoard, robot', babies'') = reactiveAgent envBoard robot babies'
-              print babies'
-              print babies''
               print "Board after reactive agent"
+              print babies''
               pprint reacBoard
               simulationLoop (t-1) reacBoard [robot'] babies'' seed'
 
@@ -114,12 +114,16 @@ generateEnvironment board seed perc =
     let
       x = 'X'
       perc = 10
+      m = length board
+      n = length $ head board
+      -- babyCount = 1 + div (m*n*10) 100
+      babyCount = 3
       -- t = 2
       -- board = initBoard m n x
       (dirtiedBoard, seed') = generateInitialDirt board 7 seed
       (board', seed'') = generateObstacles dirtiedBoard perc seed'
-      board'' = genBabyJail board' 3 0
-      (board''', babies, seed''') = generateBabies board'' 3 seed''
+      board'' = genBabyJail board' babyCount 0
+      (board''', babies, seed''') = generateBabies board'' babyCount seed''
       in
         (board''', babies, seed''')
         -- simulateEnvironment t board''' babies seed''
@@ -136,4 +140,4 @@ simulateEnvironment cycles board babies seed =
 
 
 main :: IO ()
-main = simulate 5 5 42
+main = simulate 5 5 100 42

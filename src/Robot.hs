@@ -143,44 +143,58 @@ reactiveAgent board robot babies =
       case s of
         1 ->
           let
-            _:path = lookForObjectiveR board robot
-            l = length path
-            (di, dj) = last path
-            (board', robot') = followPath board robot path 2
+            objPath = lookForObjectiveR board robot
             in
-              if l <= 2 && board!!di!!dj=='B'
+              if null objPath
                 then
-                  let
-                    robot'' = Robot di dj 2
-                    nbaby = Baby di dj 2
-                    carriedBaby = findBabyAt (di, dj) babies
-                    babies' = delete carriedBaby babies
-                    babies'' = nbaby:babies
-                    in
-                      (board', robot'', babies'')
+                  (board, robot, babies)
                 else
-                  (board', robot', babies)
+                  let
+                    _:path = objPath
+                    l = length path
+                    (di, dj) = last path
+                    (board', robot') = followPath board robot path 2
+                    in
+                      if l <= 2 && board!!di!!dj=='B'
+                        then
+                          let
+                            robot'' = Robot di dj 2
+                            nbaby = Baby di dj 2
+                            carriedBaby = findBabyAt (di, dj) babies
+                            babies' = delete carriedBaby babies
+                            babies'' = nbaby:babies'
+                            in
+                              (board', robot'', babies'')
+                        else
+                          (board', robot', babies)
         2 ->
           let
-            src:path = lookForBabyJail board robot
-            l = length path
+            objPath = lookForBabyJail board robot
             in
-              if l == 1
+              if null objPath
                 then
-                  let
-                    dest = last path
-                    (board', robot', babies') = depositBaby board robot babies dest
-                    in (board', robot', babies') --mejorable
+                  (board, robot, babies)
                 else
                   let
-                    (srci, srcj) = src
-                    (desti, destj) = head path
-                    nbaby = Baby desti destj 2
-                    carriedBaby = findBabyAt (srci, srcj) babies
-                    babies' = delete carriedBaby babies
-                    babies'' = nbaby:babies
-                    (board', robot') = followPath board robot path 1
-                  in (board', robot', babies'')
+                    src:path = objPath
+                    l = length path
+                    in
+                      if l == 1
+                        then
+                          let
+                            dest = last path
+                            (board', robot', babies') = depositBaby board robot babies dest
+                            in (board', robot', babies') --mejorable
+                        else
+                          let
+                            (srci, srcj) = src
+                            (desti, destj) = head path
+                            nbaby = Baby desti destj 2
+                            carriedBaby = findBabyAt (srci, srcj) babies
+                            babies' = delete carriedBaby babies
+                            babies'' = nbaby:babies'
+                            (board', robot') = followPath board robot path 1
+                          in (board', robot', babies'')
         _ -> (board, robot, babies)
 
 
