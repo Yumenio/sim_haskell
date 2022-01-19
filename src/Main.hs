@@ -106,6 +106,7 @@ simulationLoop t board robots babies seed =
                 (reacBoard, robot', babies'') = modelBasedAgent envBoard robot babies'
               print "Board after agent"
               print babies''
+              print robot'
               pprint reacBoard
               simulationLoop (t-1) reacBoard [robot'] babies'' seed'
 
