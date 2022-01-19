@@ -313,8 +313,10 @@ appendPath queue path (newItemForPath:rest) =
       appendPath queue' path rest
 
 
-dfsOptimalPath :: [[Char]] -> (Int, Int) -> [(Int, Int)] -> ([(Int, Int)],Int) -> ([(Int, Int)], Int) -> ([(Int, Int)], Int)
-dfsOptimalPath board node visited (current_path, current_value) (best_path, best_value) =
+
+-- dfsOptimalPath :: [[Char]] -> (Int, Int) -> [(Int, Int)] -> ([(Int, Int)],Int) -> ([(Int, Int)], Int) -> ([(Int, Int)], Int)
+dfsOptimalPath :: ([[Char]], (Int, Int), [(Int, Int)], ([(Int, Int)],Int), ([(Int, Int)], Int)) -> ([(Int, Int)], Int)
+dfsOptimalPath (board, node, visited, (current_path, current_value), (best_path, best_value)) =
   let
     (i,j) = node
     item = board!!i!!j
@@ -353,7 +355,12 @@ bestDfsPath paths =
 
 
 dfsRecTuples :: [(Int, Int)] -> [[Char]] -> [(Int, Int)] -> ([(Int, Int)], Int) -> ([(Int, Int)], Int) -> [([[Char]], (Int, Int), [(Int, Int)], ([(Int, Int)], Int), ([(Int, Int)], Int))]
-dfsRecTuples node board visited currentPath bestPath = (board, node, visited, currentPath, bestPath)
+dfsRecTuples [] _ _ _ _ = []
+dfsRecTuples (node:t) board visited currentPath bestPath =
+  let
+    rec_call = dfsRecTuples t board visited currentPath bestPath
+    in
+      (board, node, visited, currentPath, bestPath):rec_call
 
 pprintQueue :: [[(Int, Int)]] -> IO ()
 pprintQueue [] = return ()
