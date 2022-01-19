@@ -242,6 +242,15 @@ findBabyAt (i, j) (baby:btail) =
         else
           findBabyAt (i,j) btail
 
+jailReachable :: [[Char]] -> Robot -> Bool
+jailReachable board robot =
+  let
+    path = lookForBabyJail board robot
+    in
+      case path of
+        [] -> False
+        _  -> True
+
 lookForObjectiveR :: [[Char]] -> Robot -> [(Int, Int)]
 lookForObjectiveR board robot =
   let
@@ -313,14 +322,75 @@ appendPath queue path (newItemForPath:rest) =
       appendPath queue' path rest
 
 
-modelBasedAgent :: [[Char]] -> Robot -> IO ()
-modelBasedAgent board robot =
+modelBasedAgent :: [[Char]] -> Robot -> [Baby] -> ([[Char]], Robot, [Baby])
+modelBasedAgent board robot babies =
   do
     let
       (i,j,s) = robotAll robot
-      (path, value) = dfsOptimalPath (board, (i,j), [], ([],0), ([],-10000))
-    print "Best path found:"
-    print path
+      jail_reachable = jailReachable board robot
+      in
+        case s of
+          1 ->
+            if jail_reachable
+              then let
+                (path, value) = dfsOptimalPath (board, (i,j), [], ([],0), ([],-10000))
+                l = length path
+                (di, dj) = last path
+                (board', robot') = followPath board robot path 2
+                in
+                  if l <= 2 && board!!di!!dj == 'B'
+                    then
+                      let
+                        robot'' = Robot di dj 2
+                        nbaby = Baby di dj 2
+                        carriedBaby = findBabyAt (di, dj) babies
+                        babies' = delete carriedBaby babies
+                        babies'' = nbaby:babies'
+                        in
+                          (board', robot'', babies'')
+                    else
+                      (board', robot', babies)
+              else let
+                (path, value) = dfsOptimalPathNoBaby (board, (i,j), [], ([],0), ([],-10000))
+                (board', robot') = followPath board robot path 2
+                in (board', robot', babies)
+          
+
+          2 ->
+            if jail_reachable
+              then let
+                objPath = lookForBabyJail board robot
+                in
+                  if null objPath
+                    then
+                      (board, robot, babies)
+                    else
+                      let
+                        src:path = objPath
+                        l = length path
+                        in
+                          if l == 1
+                            then
+                              let
+                                dest = last path
+                                (board', robot', babies') = depositBaby board robot babies dest
+                                in (board', robot', babies') --mejorable
+                            else
+                              let
+                                (srci, srcj) = src
+                                (desti, destj) = head path
+                                nbaby = Baby desti destj 2
+                                carriedBaby = findBabyAt (srci, srcj) babies
+                                babies' = delete carriedBaby babies
+                                babies'' = nbaby:babies'
+                                (board', robot') = followPath board robot path 1
+                              in (board', robot', babies'')
+              else  -- acá tocaría soltar rápido al bebé de ser posible, pero kepereza
+                (board, robot, babies)
+          _ -> (board, robot, babies)
+
+
+
 
 -- dfsOptimalPath :: [[Char]] -> (Int, Int) -> [(Int, Int)] -> ([(Int, Int)],Int) -> ([(Int, Int)], Int) -> ([(Int, Int)], Int)
 dfsOptimalPath :: ([[Char]], (Int, Int), [(Int, Int)], ([(Int, Int)],Int), ([(Int, Int)], Int)) -> ([(Int, Int)], Int)
@@ -345,6 +415,30 @@ dfsOptimalPath (board, node, visited, (current_path, current_value), (best_path,
                 fixed_adjs = dfsRecTuples adjs board visited' (current_path', current_value') (best_path', best_value')
                 adj_best_paths = map dfsOptimalPath fixed_adjs
                 in bestDfsPath adj_best_paths
+
+dfsOptimalPathNoBaby :: ([[Char]], (Int, Int), [(Int, Int)], ([(Int, Int)],Int), ([(Int, Int)], Int)) -> ([(Int, Int)], Int)
+dfsOptimalPathNoBaby (board, node, visited, (current_path, current_value), (best_path, best_value)) =
+  let
+    (i,j) = node
+    item = board!!i!!j
+    in
+      if item == 'O' || item == 'Z' || item == 'B' || node `elem` visited
+        then (best_path, best_value)
+        else
+          let
+            value = if item == 'X' then -1 else if item == 'C' then 5 else -1000 -- -1000 stands for...idk, but just in case
+            visited' = (i,j):visited
+            current_path' = current_path++[(i,j)]
+            current_value' = current_value + value
+            adjs = getAdjacents board (i,j) visited'
+            (best_path', best_value') = if current_value' > best_value then (current_path', current_value') else (best_path, best_value)
+            in case adjs of
+              [] -> (best_path', best_value')
+              _  -> let
+                fixed_adjs = dfsRecTuples adjs board visited' (current_path', current_value') (best_path', best_value')
+                adj_best_paths = map dfsOptimalPath fixed_adjs
+                in bestDfsPath adj_best_paths
+
 
 -- receives a list of tuples (path, path_value) and return the path with the highest value
 bestDfsPath :: [([(Int, Int)], Int)] -> ([(Int, Int)], Int)
