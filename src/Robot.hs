@@ -483,7 +483,7 @@ dfsOptimalPath (board, node, visited, (current_path, current_value), (best_path,
         then (best_path, best_value)
         else
           let
-            value = if item == 'X' then -1 else if item == 'C' then 5 else if item == 'B' then 50 else -1000 -- -1000 stands for...idk, but just in case
+            value = if item == 'X' then -1 else if item == 'C' then 50 else if item == 'B' then 101 else -1000 -- -1000 stands for...idk, but just in case
             visited' = (i,j):visited
             current_path' = current_path++[(i,j)]
             current_value' = current_value + value
@@ -506,7 +506,7 @@ dfsOptimalPathNoBaby (board, node, visited, (current_path, current_value), (best
         then (best_path, best_value)
         else
           let
-            value = if item == 'X' then -1 else if item == 'C' then 5 else -1000 -- -1000 stands for...idk, but just in case
+            value = if item == 'X' then -1 else if item == 'C' then 50 else -1000 -- -1000 stands for...idk, but just in case
             visited' = (i,j):visited
             current_path' = current_path++[(i,j)]
             current_value' = current_value + value
