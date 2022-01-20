@@ -476,10 +476,11 @@ modelBasedAgentIO board robot babies =
 dfsOptimalPath :: ([[Char]], (Int, Int), [(Int, Int)], ([(Int, Int)],Int), ([(Int, Int)], Int)) -> ([(Int, Int)], Int)
 dfsOptimalPath (board, node, visited, (current_path, current_value), (best_path, best_value)) =
   let
+    l = length current_path
     (i,j) = node
     item = board!!i!!j
     in
-      if item == 'O' || item == 'Z' || node `elem` visited
+      if l >= 10 || item == 'O' || item == 'Z' || node `elem` visited
         then (best_path, best_value)
         else
           let
@@ -499,10 +500,11 @@ dfsOptimalPath (board, node, visited, (current_path, current_value), (best_path,
 dfsOptimalPathNoBaby :: ([[Char]], (Int, Int), [(Int, Int)], ([(Int, Int)],Int), ([(Int, Int)], Int)) -> ([(Int, Int)], Int)
 dfsOptimalPathNoBaby (board, node, visited, (current_path, current_value), (best_path, best_value)) =
   let
+    l = length current_path
     (i,j) = node
     item = board!!i!!j
     in
-      if item == 'O' || item == 'Z' || item == 'B' || node `elem` visited
+      if l > 10 || item == 'O' || item == 'Z' || item == 'B' || node `elem` visited
         then (best_path, best_value)
         else
           let
