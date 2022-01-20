@@ -88,27 +88,25 @@ simulationLoop t board robots babies seed =
     let
       cleanPercentage = cleanPerc board
       in
-        if cleanPercentage > 100
-          then
-            print "OBJECTIVE COMPLETE"
-          else
-            do
-              let
-                (envBoard, babies', seed') = simulateEnvironment 1 board babies seed
+        do
+          putStr "Clean % = "
+          print cleanPercentage
+          let
+            (envBoard, babies', seed') = simulateEnvironment 1 board babies seed
 
-              print "Board after environment sim:"
-              print babies'
-              pprint envBoard
+          print "Board after environment sim:"
+          -- print babies'
+          pprint envBoard
 
-              let
-                robot = head robots
-                -- (reacBoard, robot', babies'') = reactiveAgent envBoard robot babies'
-                (reacBoard, robot', babies'') = modelBasedAgent envBoard robot babies'
-              print "Board after agent"
-              print babies''
-              print robot'
-              pprint reacBoard
-              simulationLoop (t-1) reacBoard [robot'] babies'' seed'
+          let
+            robot = head robots
+            -- (reacBoard, robot', babies'') = reactiveAgent envBoard robot babies'
+            (reacBoard, robot', babies'') = modelBasedAgent envBoard robot babies'
+          print "Board after agent"
+          -- print babies''
+          -- print robot'
+          pprint reacBoard
+          simulationLoop (t-1) reacBoard [robot'] babies'' seed'
 
 
 generateEnvironment board seed perc =
