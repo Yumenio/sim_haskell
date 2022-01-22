@@ -141,6 +141,7 @@ reactiveAgent board robot babies =
     (i, j, s) = robotAll robot
     in
       case s of
+        -- looking for nearest objective
         1 ->
           let
             objPath = lookForObjectiveR board robot
@@ -153,7 +154,7 @@ reactiveAgent board robot babies =
                     _:path = objPath
                     l = length path
                     (di, dj) = last path
-                    (board', robot') = followPath board robot path 2
+                    (board', robot') = followPath board robot path 1
                     in
                       if l <= 2 && board!!di!!dj=='B'
                         then
@@ -167,12 +168,14 @@ reactiveAgent board robot babies =
                               (board', robot'', babies'')
                         else
                           (board', robot', babies)
+
+        --carrying a baby
         2 ->
           let
             objPath = lookForBabyJail board robot
             in
               if null objPath
-                then
+                then --no babyJail cell accessible atm
                   (board, robot, babies)
                 else
                   let
