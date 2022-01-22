@@ -46,9 +46,9 @@ validPos board i j =
     in
       i >= 0 && i < m && j >= 0 && j < n
 
-validPosMap :: ([[Char]], Int, Int) -> Bool
-validPosMap (board, i, j) =
-  validPos board i j && board!!i!!j/='O' && board!!i!!j/='Z'
+validPosMap :: ([[Char]], Int, Int, [Char]) -> Bool
+validPosMap (board, i, j, excl) =
+  validPos board i j && notElem (board!!i!!j) excl
 
 rowDim :: (Foldable f, Num b) => f a -> b
 rowDim = foldr (\ x -> (+) 1) 0
@@ -77,22 +77,11 @@ adjacents (i,j) (di, dj)  | i == di = j == (dj-1) || j == (dj+1)
                           | otherwise = False
 
 
-getAdjacents :: [[Char]] -> (Int, Int) -> [(Int, Int)] -> [(Int, Int)]
-getAdjacents board (i,j) visited =
+getAdjacents :: [[Char]] -> (Int, Int) -> [(Int, Int)] -> [Char] -> [(Int, Int)]
+getAdjacents board (i,j) visited excl =
   let
-    candidates = [(board,i,j+1), (board,i,j-1), (board,i+1,j), (board,i-1,j)]
+    candidates = [(board,i,j+1,excl), (board,i,j-1,excl), (board,i+1,j,excl), (board,i-1,j,excl)]
     validCandidates =  filter validPosMap candidates
-    validCandidates' = map (\(_,i,j) -> (i,j)) validCandidates
-    in
-      validCandidates' \\ visited
-
-
-
-getAdjacentsNoBaby :: [[Char]] -> (Int, Int) -> [(Int, Int)] -> [(Int, Int)]
-getAdjacentsNoBaby board (i,j) visited =
-  let
-    candidates = [(board,i,j+1), (board,i,j-1), (board,i+1,j), (board,i-1,j)]
-    validCandidates =  filter validPosMap candidates
-    validCandidates' = map (\(_,i,j) -> (i,j)) validCandidates
+    validCandidates' = map (\(_,i,j,_) -> (i,j)) validCandidates
     in
       validCandidates' \\ visited

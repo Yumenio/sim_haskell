@@ -306,7 +306,7 @@ bfsGenericObj board queue visited objectives =
           h
       else
         let
-          adjs = getAdjacents board (i,j) visited
+          adjs = getAdjacents board (i,j) visited ['O','Z']
           visited' = ((i,j):visited)
           in
             case adjs of
@@ -348,7 +348,7 @@ bfsGenericObjNoBaby board queue visited objectives =
           h
       else
         let
-          adjs = getAdjacents board (i,j) visited
+          adjs = getAdjacents board (i,j) visited ['O', 'Z', 'B']
           visited' = ((i,j):visited)
           in
             case adjs of
@@ -591,7 +591,7 @@ dfsOptimalPath (board, node, visited, (current_path, current_value), (best_path,
             visited' = (i,j):visited
             current_path' = current_path++[(i,j)]
             current_value' = current_value + value
-            adjs = getAdjacents board (i,j) visited'
+            adjs = getAdjacents board (i,j) visited' ['O', 'Z']
             (best_path', best_value') = if current_value' > best_value then (current_path', current_value') else (best_path, best_value)
             in case adjs of
               [] -> (best_path', best_value')
@@ -615,7 +615,7 @@ dfsOptimalPathNoBaby (board, node, visited, (current_path, current_value), (best
             visited' = (i,j):visited
             current_path' = current_path++[(i,j)]
             current_value' = current_value + value
-            adjs = getAdjacents board (i,j) visited'
+            adjs = getAdjacents board (i,j) visited' ['O', 'Z', 'B']
             (best_path', best_value') = if current_value' > best_value then (current_path', current_value') else (best_path, best_value)
             in case adjs of
               [] -> (best_path', best_value')

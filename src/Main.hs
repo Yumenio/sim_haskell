@@ -63,8 +63,24 @@ generateObstaclesAux board amount seed  | amount == 0 = (board, seed)
                                             in generateObstaclesAux nboard (amount-1) y 
 
 
-simulate :: Int -> Int -> Int -> Int -> IO()
-simulate m n cycles seed =
+simulateR :: Int -> Int -> Int -> Int -> IO()
+simulateR m n cycles seed =
+  do
+    let
+      t = cycles
+      x = 'X'
+      perc = 10
+      board = initBoard m n x
+      (board', babies, seed') = generateEnvironment board seed perc
+      (fullBoard, robots, seed'') = generateRobots board' 1 seed'
+    print "Initial board:"
+    pprint fullBoard
+
+    simulationLoop t fullBoard robots babies seed''      
+    
+
+simulateM :: Int -> Int -> Int -> Int -> IO()
+simulateM m n cycles seed =
   do
     let
       t = cycles
@@ -139,4 +155,4 @@ simulateEnvironment cycles board babies seed =
 
 
 main :: IO ()
-main = simulate 5 5 100 42
+main = simulateM 5 5 100 42
