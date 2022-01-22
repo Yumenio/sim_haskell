@@ -147,7 +147,15 @@ reactiveAgent :: [[Char]] -> Robot -> [Baby] -> ([[Char]], Robot, [Baby])
 reactiveAgent board robot babies =
   let
     (i, j, s) = robotAll robot
+    beneath = robotBth robot
     in
+      if beneath == 'C'
+        then let
+          robot' = Robot i j s 'X'
+          in
+            (board, robot', babies)
+        else
+
       case s of
         -- looking for nearest objective
         1 ->
@@ -342,7 +350,15 @@ modelBasedAgent board robot babies =
     let
       (i,j,s) = robotAll robot
       jail_reachable = jailReachable board robot
+      beneath = robotBth robot
       in
+        if beneath == 'C'
+          then let
+            robot' = Robot i j s 'X'
+            in
+              (board, robot', babies)
+          else
+      
         case s of
           --looking for the best path to follow
           1 ->
@@ -375,7 +391,7 @@ modelBasedAgent board robot babies =
                             if board!!di!!dj == 'B'
                               then
                                 let
-                                  robot'' = Robot di dj 2 'B'
+                                  robot'' = Robot di dj 2 'X'
                                   nbaby = Baby di dj 2
                                   carriedBaby = findBabyAt (di, dj) babies
                                   babies' = delete carriedBaby babies
@@ -464,7 +480,7 @@ modelBasedAgentIO board robot babies =
                             if board!!di!!dj == 'B'
                               then
                                 let
-                                  robot'' = Robot di dj 2 'B'
+                                  robot'' = Robot di dj 2 'X'
                                   nbaby = Baby di dj 2
                                   carriedBaby = findBabyAt (di, dj) babies
                                   babies' = delete carriedBaby babies
