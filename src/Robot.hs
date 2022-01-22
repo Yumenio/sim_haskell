@@ -286,7 +286,7 @@ lookForBabyJail board robot =
   let
     (i,j,s) = robotAll robot
     in
-      bfsGenericObj board [[(i,j)]] [(i,j)] ['S']
+      bfsGenericObjNoBaby board [[(i,j)]] [(i,j)] ['S']
 
 bfsObjR :: [[Char]] -> [Char] -> (Int, Int) -> [(Int, Int)]
 bfsObjR board  objectives (i,j) =
@@ -295,6 +295,48 @@ bfsObjR board  objectives (i,j) =
 bfsGenericObj :: [[Char]] -> [[(Int, Int)]] -> [(Int, Int)] -> [Char] -> [(Int, Int)]
 bfsGenericObj board [] visited objectives = []
 bfsGenericObj board queue visited objectives =
+  do
+    let
+      (h:tail) = queue
+      (i,j) = last h
+
+    if (board!!i!!j) `elem` objectives
+      then
+        do
+          h
+      else
+        let
+          adjs = getAdjacents board (i,j) visited
+          visited' = ((i,j):visited)
+          in
+            case adjs of
+              [adj1] -> let
+                newQueue = appendPath tail h [adj1]
+                in
+                  bfsGenericObj board  newQueue visited' objectives
+
+              [adj1,adj2] -> let
+                newQueue = appendPath tail h [adj1,adj2]
+                in
+                  bfsGenericObj board  newQueue visited' objectives
+
+              [adj1,adj2,adj3] -> let
+                newQueue = appendPath tail h [adj1,adj2,adj3]
+                in
+                  bfsGenericObj board  newQueue visited' objectives
+
+              [adj1,adj2,adj3,adj4] -> let
+                newQueue = appendPath tail h [adj1,adj2,adj3,adj4]
+                in
+                  bfsGenericObj board  newQueue visited' objectives
+
+
+              _ -> bfsGenericObj board tail visited' objectives
+
+
+bfsGenericObjNoBaby :: [[Char]] -> [[(Int, Int)]] -> [(Int, Int)] -> [Char] -> [(Int, Int)]
+bfsGenericObjNoBaby board [] visited objectives = []
+bfsGenericObjNoBaby board queue visited objectives =
   do
     let
       (h:tail) = queue

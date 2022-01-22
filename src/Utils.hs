@@ -87,4 +87,12 @@ getAdjacents board (i,j) visited =
       validCandidates' \\ visited
 
 
-  
+
+getAdjacentsNoBaby :: [[Char]] -> (Int, Int) -> [(Int, Int)] -> [(Int, Int)]
+getAdjacentsNoBaby board (i,j) visited =
+  let
+    candidates = [(board,i,j+1), (board,i,j-1), (board,i+1,j), (board,i-1,j)]
+    validCandidates =  filter validPosMap candidates
+    validCandidates' = map (\(_,i,j) -> (i,j)) validCandidates
+    in
+      validCandidates' \\ visited
