@@ -4,8 +4,8 @@ import Utils (subNth0, getBoardIndex, adjacents, getAdjacents)
 import Babies
 import Data.List
 
--- I, J, State
-data Robot = Robot { robotRow :: Int, robotCol :: Int, robotState :: Int} deriving (Show)
+-- I, J, State, Beneath(the char that is beneath him in the board)
+data Robot = Robot { robotRow :: Int, robotCol :: Int, robotState :: Int, robotBth :: Char} deriving (Show)
 
 robotAll :: Robot -> (Int, Int, Int)
 robotAll robot = (robotRow robot, robotCol robot, robotState robot)
@@ -14,13 +14,15 @@ moveLeftR :: [[Char ]] -> Robot -> ([[Char]], Robot)
 moveLeftR board robot =
   let
     (i,j,s) = robotAll robot
+    beneath = robotBth robot
     in
       if j == 0
         then (board,robot)
         else
           let
-            board' = moveAnyR board i j 0 (-1) 'X'
-            robot' = Robot i (j-1) s
+            board' = moveAnyR board i j 0 (-1) beneath
+            nbeneath = board!!i!!(j-1)
+            robot' = Robot i (j-1) s nbeneath
             in (board', robot')
 
   -- let board' = subNth0 board i j 'X' in subNth0 board' i (j-1) 'R'
@@ -29,19 +31,22 @@ moveUpR :: [[Char]] -> Robot -> ([[Char]], Robot)
 moveUpR board robot =
   let
     (i,j,s) = robotAll robot
+    beneath = robotBth robot
     in
       if i == 0
         then (board,robot)
         else
           let
-            board' = moveAnyR board i j (-1) 0 'X'
-            robot' = Robot (i-1) j s
+            board' = moveAnyR board i j (-1) 0 beneath
+            nbeneath = board!!(i-1)!!j
+            robot' = Robot (i-1) j s nbeneath
             in (board', robot')
 
 moveRightR :: [[Char]] -> Robot -> ([[Char]], Robot)
 moveRightR board robot =
   let
     (i,j,s) = robotAll robot
+    beneath = robotBth robot
     n = length $ head board
     in
       if j == (n-1)
@@ -49,13 +54,15 @@ moveRightR board robot =
         else
           let
             board' = moveAnyR board i j 0 1 'X'
-            robot' = Robot i (j+1) s
+            nbeneath = board!!i!!(j+1)
+            robot' = Robot i (j+1) s nbeneath
             in (board', robot')
 
 moveDownR :: [[Char]] -> Robot -> ([[Char]], Robot)
 moveDownR board robot =
   let
     (i,j,s) = robotAll robot
+    beneath = robotBth robot
     m = length board
     in
       if i == (m-1)
@@ -63,7 +70,8 @@ moveDownR board robot =
         else
           let
             board' = moveAnyR board i j 1 0 'X'
-            robot' = Robot (i+1) j s
+            nbeneath = board!!(i+1)!!j
+            robot' = Robot (i+1) j s nbeneath
             in (board', robot')
 
 
@@ -131,7 +139,7 @@ generateRobotsAux board amount seed robots =
         else
           let
             board' = subNth0 board xMod yMod 'R'
-            robot = Robot xMod yMod 1
+            robot = Robot xMod yMod 1 'X'
             in generateRobotsAux board' (amount-1) y (robot:robots)
 
 
@@ -159,7 +167,7 @@ reactiveAgent board robot babies =
                       if l <= 2 && board!!di!!dj=='B'
                         then
                           let
-                            robot'' = Robot di dj 2
+                            robot'' = Robot di dj 2 'B'
                             nbaby = Baby di dj 2
                             carriedBaby = findBabyAt (di, dj) babies
                             babies' = delete carriedBaby babies
@@ -212,9 +220,11 @@ followPath board robot (nextStep:tail) steps =
       if adjacents (i,j) (di, dj)
         then
           let
-            robot' = Robot di dj s
+            beneath = robotBth robot
+            nbeneath = board!!di!!dj
+            robot' = Robot di dj s nbeneath
             board' = subNth0 board di dj 'R'
-            board'' = subNth0 board' i j 'X'
+            board'' = subNth0 board' i j beneath
             in
               followPath board'' robot' tail (steps-1)
         else
@@ -224,10 +234,11 @@ depositBaby :: [[Char]] -> Robot -> [Baby] -> (Int, Int) -> ([[Char]], Robot, [B
 depositBaby board robot babies (di, dj)=
   let
     (i,j,_) = robotAll robot
+    beneath = robotBth robot
     carriedBaby = findBabyAt (i,j) babies
     babies' = delete carriedBaby babies
     board' = subNth0 board di dj 'Z'
-    robot' = Robot i j 1
+    robot' = Robot i j 1 beneath
     in
       (board', robot', babies')
 
@@ -364,7 +375,7 @@ modelBasedAgent board robot babies =
                             if board!!di!!dj == 'B'
                               then
                                 let
-                                  robot'' = Robot di dj 2
+                                  robot'' = Robot di dj 2 'B'
                                   nbaby = Baby di dj 2
                                   carriedBaby = findBabyAt (di, dj) babies
                                   babies' = delete carriedBaby babies
@@ -453,7 +464,7 @@ modelBasedAgentIO board robot babies =
                             if board!!di!!dj == 'B'
                               then
                                 let
-                                  robot'' = Robot di dj 2
+                                  robot'' = Robot di dj 2 'B'
                                   nbaby = Baby di dj 2
                                   carriedBaby = findBabyAt (di, dj) babies
                                   babies' = delete carriedBaby babies
