@@ -358,7 +358,6 @@ modelBasedAgent board robot babies =
                         then (board, robot, babies)
                         else let
                           src:path = opt_path
-                          -- l = length path
                           (di, dj) = head path
                           (board', robot') = followPath board robot path 1
                           in
