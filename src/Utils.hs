@@ -66,7 +66,8 @@ dirt ('C':t) = 1 + dirt t
 dirt (_:t) = 0 + dirt t
 
 dirtPerc :: [[Char]] -> Int
-dirtPerc board = let m = length board; n = length board in div (sum (map dirt board)*100) (m*n)
+dirtPerc board = let m = length board; n = length $ head board in div (sum (map dirt board)*100) (m*n)
+
 
 cleanPerc board = 100 - dirtPerc board
 

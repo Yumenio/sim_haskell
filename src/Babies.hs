@@ -101,8 +101,8 @@ canMoveB :: [[Char]] -> Int -> Int -> Bool
 canMoveB board i j =
   let
     elem = board!!i!!j
-    in  -- O => Obstacle, C => Crap, R => Robot, B => Baby, Z => Baby in jail xd
-      not (elem == 'O' || elem == 'C' || elem == 'R' || elem == 'B' || elem == 'Z')
+    in  -- O => Obstacle, C => Crap,    R => Robot,     B => Baby,    S => BabyJail,  Z => Baby in jail xd
+      not (elem == 'O' || elem == 'C' || elem == 'R' || elem == 'B' || elem == 'S' || elem == 'Z')
 
 
 
