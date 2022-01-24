@@ -53,6 +53,7 @@ generateSporadicDirt board current_cycle t perc seed =
         then let
           m = length board
           n = length $ head board
+          -- generating 1+perc just in case perc==0
           amount = succ ( div (m*n*perc) 100)
           in
             generateInitialDirtAux board amount seed

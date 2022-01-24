@@ -38,6 +38,25 @@ randomAdj board i j seed =
         3 -> if validPos board (i-1) j then (i-1, j, r) else randomAdj board i j r
         _ -> (i, j, r) -- should not happen but who knows x)
 
+randomAdj8 :: [[Char]] -> Int -> Int -> Int -> (Int, Int, Int)
+randomAdj8 board i j seed =
+  let
+    r = runRandom rand seed
+    rMod = mod r 8
+    in
+      case rMod of
+        0 -> if validPos board i (j+1) then (i, j+1, r) else randomAdj board i j r --right
+        1 -> if validPos board (i+1) j then (i+1, j, r) else randomAdj board i j r --down
+        2 -> if validPos board i (j-1) then (i, j-1, r) else randomAdj board i j r --left
+        3 -> if validPos board (i-1) j then (i-1, j, r) else randomAdj board i j r --up
+
+        4 -> if validPos board (i+1) (j+1) then (i+1, j+1, r) else randomAdj board i j r --down+right
+        5 -> if validPos board (i+1) (j-1) then (i+1, j-1, r) else randomAdj board i j r --down+left
+        6 -> if validPos board (i-1) (j-1) then (i-1, j-1, r) else randomAdj board i j r -- up+left
+        7 -> if validPos board (i-1) (j+1) then (i-1, j+1, r) else randomAdj board i j r -- up+right
+        _ -> (i, j, r) -- should not happen but who knows x)
+
+
 validPos :: [[Char]] -> Int -> Int -> Bool
 validPos board i j =
   let

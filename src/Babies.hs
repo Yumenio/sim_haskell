@@ -1,5 +1,5 @@
 module Babies where
-import Utils (subNth0, getBoardIndex, randomAdj)
+import Utils (subNth0, getBoardIndex, randomAdj, randomAdj8)
 import Random (rand, runRandom)
 
 data Baby = Baby {babyRow :: Int, babyCol :: Int, babyState :: Int} deriving (Show, Eq)
@@ -159,7 +159,7 @@ moveBabies board (baby:bs) seed =
               (board', baby:bs', seed')
 
 moveBaby :: [[Char]] -> Baby -> Int -> ([[Char]], Baby, Int)
-moveBaby board baby seed = moveBabyAux board baby seed 4
+moveBaby board baby seed = moveBabyAux board baby seed 1
 
 moveBabyAux :: [[Char]] -> Baby -> Int -> Int -> ([[Char]], Baby, Int)
 moveBabyAux board baby seed 0 = (board, baby, seed)
@@ -206,3 +206,19 @@ genSingleDirt (board, baby, seed) =
       if board!!i'!!j' /= 'X'
         then (-1,-1)
         else (i',j')
+
+
+generateIntrincateDirt :: [[Char]] -> [Baby] -> Int -> ([[Char]], Int)
+generateIntrincateDirt board [] seed = (board, seed)
+generateIntrincateDirt board (baby:bs) seed =
+  let
+    (i,j,s) = babyAll baby
+    (i', j', seed') = randomAdj8 board i j seed
+    in
+      if s == 2 || board!!i'!!j' /= 'X'
+        then
+          generateIntrincateDirt board bs seed'
+        else let
+          board' = subNth0 board i' j' 'C'
+          in
+            generateIntrincateDirt board' bs seed'
