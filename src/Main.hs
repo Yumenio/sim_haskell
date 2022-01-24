@@ -35,9 +35,14 @@ generateInitialDirtAux board amount seed =
     y = runRandom rand x
     xMod = mod x m
     yMod = mod y n
-    board' = subNth0 board xMod yMod 'C'
-    in
-      generateInitialDirtAux board' (amount-1) y
+    cell = board!!xMod!!yMod
+    in if cell == 'X'
+      then let
+        board' = subNth0 board xMod yMod 'C'
+        in
+          generateInitialDirtAux board' (amount-1) y
+      else
+        generateInitialDirtAux board (amount-1) y
 
 
 --second of the pipeline
