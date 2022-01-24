@@ -53,7 +53,7 @@ generateSporadicDirt board current_cycle t perc seed =
         then let
           m = length board
           n = length $ head board
-          amount = div (m*n*perc) 100
+          amount = succ ( div (m*n*perc) 100)
           in
             generateInitialDirtAux board amount seed
         else
@@ -162,7 +162,6 @@ generateEnvironment board seed perc =
       (board''', babies, seed''') = generateBabies board'' babyCount seed''
       in
         (board''', babies, seed''')
-        -- simulateEnvironment t board''' babies seed''
 
 
 simulateEnvironment :: Int -> [[Char]] -> [Baby] -> Int -> ([[Char]], [Baby], Int)
