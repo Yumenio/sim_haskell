@@ -140,7 +140,7 @@ simulationLoop cycle tcycle t board robots babies seed =
                 robot = head robots
                 -- (reacBoard, robot', babies'') = reactiveAgent envBoard robot babies'
                 (reacBoard, robot', babies'') = modelBasedAgent envBoard robot babies'
-              print "Board after agent"
+              print "Board after agents"
               -- print babies''
               -- print robot'
               pprint reacBoard
@@ -173,6 +173,24 @@ simulateEnvironment cycles board babies seed =
     (board', babies', seed'') = moveBabies dirtiedBoard babies seed'
     in
       simulateEnvironment (cycles-1) board' babies' seed''
+
+
+simulateRobotsM :: [[Char]] -> [Robot] -> [Baby] -> [Robot] -> ([[Char]], [Robot], [Baby])
+simulateRobotsM board [] babies simulatedRobots = (board, simulatedRobots, babies)
+simulateRobotsM board (robot:rs) babies simRobots =
+  let
+    (board', robot', babies') = modelBasedAgent board robot babies
+    in
+      simulateRobotsM board' rs babies' (simRobots++[robot'])
+
+
+simulateRobotsR :: [[Char]] -> [Robot] -> [Baby] -> [Robot] -> ([[Char]], [Robot], [Baby])
+simulateRobotsR board [] babies simulatedRobots = (board, simulatedRobots, babies)
+simulateRobotsR board (robot:rs) babies simRobots =
+  let
+    (board', robot', babies') = modelBasedAgent board robot babies
+    in
+      simulateRobotsR board' rs babies' (simRobots++[robot'])
 
 
 main :: IO ()
