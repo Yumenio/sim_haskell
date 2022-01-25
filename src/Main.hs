@@ -108,7 +108,7 @@ simulateM m n cycles seed =
       perc = 10
       board = initBoard m n x
       (board', babies, seed') = generateEnvironment board seed perc
-      (fullBoard, robots, seed'') = generateRobots board' 1 seed'
+      (fullBoard, robots, seed'') = generateRobots board' 2 seed'
     print "Initial board:"
     pprint fullBoard
 
@@ -137,14 +137,15 @@ simulationLoop cycle tcycle t board robots babies seed =
               pprint envBoard
 
               let
-                robot = head robots
+                -- robot = head robots
                 -- (reacBoard, robot', babies'') = reactiveAgent envBoard robot babies'
-                (reacBoard, robot', babies'') = modelBasedAgent envBoard robot babies'
+                -- (reacBoard, robot', babies'') = modelBasedAgent envBoard robot babies'
+                (reacBoard, robots', babies'') = simulateRobotsM envBoard robots babies' []
               print "Board after agents"
-              -- print babies''
-              -- print robot'
+              print robots
+              print babies''
               pprint reacBoard
-              simulationLoop (cycle+1) tcycle t reacBoard [robot'] babies'' seed'
+              simulationLoop (cycle+1) tcycle t reacBoard robots' babies'' seed'
 
 
 generateEnvironment board seed perc =
@@ -191,6 +192,27 @@ simulateRobotsR board (robot:rs) babies simRobots =
     (board', robot', babies') = modelBasedAgent board robot babies
     in
       simulateRobotsR board' rs babies' (simRobots++[robot'])
+
+
+simulateRobotsMIO :: [[Char]] -> [Robot] -> [Baby] -> [Robot] -> IO ([[Char]], [Robot], [Baby])
+simulateRobotsMIO board [] babies simulatedRobots =
+  do
+    print "FINAL CALL"
+    print (board, simulatedRobots, babies)
+    return (board, simulatedRobots, babies)
+simulateRobotsMIO board (robot:rs) babies simRobots =
+  do
+    print "simulation of"
+    print robot
+    print "with"
+    print babies
+    let
+      (board', robot', babies') = modelBasedAgent board robot babies
+    print "yielded"
+    print board'
+    print robot'
+    print babies'
+    return (simulateRobotsM board' rs babies' (simRobots++[robot']))
 
 
 main :: IO ()

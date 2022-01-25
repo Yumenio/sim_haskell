@@ -306,7 +306,7 @@ bfsGenericObj board queue visited objectives =
           h
       else
         let
-          adjs = getAdjacents board (i,j) visited ['O','Z']
+          adjs = getAdjacents board (i,j) visited ['O','Z', 'R']
           visited' = ((i,j):visited)
           in
             case adjs of
@@ -348,7 +348,7 @@ bfsGenericObjNoBaby board queue visited objectives =
           h
       else
         let
-          adjs = getAdjacents board (i,j) visited ['O', 'Z', 'B']
+          adjs = getAdjacents board (i,j) visited ['O', 'Z', 'R', 'B']
           visited' = ((i,j):visited)
           in
             case adjs of
@@ -422,8 +422,9 @@ modelBasedAgent board robot babies =
                 if jail_reachable
                   then let
                     (opt_path, value) = dfsOptimalPath (board, (i,j), [], ([],0), ([],-10000))
+                    opt_l = length opt_path
                     in
-                      if null opt_path
+                      if opt_l < 2
                         then (board, robot, babies)
                         else let
                           src:path = opt_path
@@ -510,14 +511,15 @@ modelBasedAgentIO board robot babies =
                 if jail_reachable
                   then let
                     (opt_path, value) = dfsOptimalPath (board, (i,j), [], ([],0), ([],-10000))
+                    opt_l = length opt_path
                     in
-                      if null opt_path
+                      if opt_l < 2
                         then return (board, robot, babies)
                         else let
                           src:path = opt_path
                           -- l = length path
                           (di, dj) = head path
-                          (board', robot') = followPath board robot path 2
+                          (board', robot') = followPath board robot path 1
                           in
                             if board!!di!!dj == 'B'
                               then
@@ -536,7 +538,7 @@ modelBasedAgentIO board robot babies =
                     in 
                       do
                         print path
-                        let (board', robot') = followPath board robot path 2
+                        let (board', robot') = followPath board robot path 1
                           in return (board', robot', babies)
           
           --looking for babyJail
@@ -567,7 +569,7 @@ modelBasedAgentIO board robot babies =
                                 carriedBaby = findBabyAt (srci, srcj) babies
                                 babies' = delete carriedBaby babies
                                 babies'' = nbaby:babies'
-                                (board', robot') = followPath board robot path 2
+                                (board', robot') = followPath board robot path 1
                               in return (board', robot', babies'')
               else  -- acá tocaría soltar rápido al bebé de ser posible, pero kepereza
                 return (board, robot, babies)
@@ -591,7 +593,7 @@ dfsOptimalPath (board, node, visited, (current_path, current_value), (best_path,
             visited' = (i,j):visited
             current_path' = current_path++[(i,j)]
             current_value' = current_value + value
-            adjs = getAdjacents board (i,j) visited' ['O', 'Z']
+            adjs = getAdjacents board (i,j) visited' ['O', 'Z', 'R']
             (best_path', best_value') = if current_value' > best_value then (current_path', current_value') else (best_path, best_value)
             in case adjs of
               [] -> (best_path', best_value')
@@ -615,7 +617,7 @@ dfsOptimalPathNoBaby (board, node, visited, (current_path, current_value), (best
             visited' = (i,j):visited
             current_path' = current_path++[(i,j)]
             current_value' = current_value + value
-            adjs = getAdjacents board (i,j) visited' ['O', 'Z', 'B']
+            adjs = getAdjacents board (i,j) visited' ['O', 'Z', 'R', 'B']
             (best_path', best_value') = if current_value' > best_value then (current_path', current_value') else (best_path, best_value)
             in case adjs of
               [] -> (best_path', best_value')
