@@ -211,6 +211,18 @@ updateCosts board costs (i,j) (adj:adjs) =
                 in updateCosts board costs' (i,j) adjs
               else
                 updateCosts board costs (i,j) adjs
+        'S' -> let
+          moveCost = 10000
+          newCost =  nodeCost + moveCost
+          newPath = nodePath++[(adjx,adjy)]
+          (currentCost,currentLength) = costs!!adjx!!adjy
+          in
+            if newCost < currentCost
+              then let
+                costs' = subNth0 costs adjx adjy (newCost,newPath)
+                in updateCosts board costs' (i,j) adjs
+              else
+                updateCosts board costs (i,j) adjs
         _ -> error "found an unintended adjacent when updating the costs of dijkstra"
 
         
@@ -239,12 +251,12 @@ indexOfMin normTable (ci, cj) (bi, bj) =
             then indexOfMin normTable (ci+1, 0) (bi, bj)
             else
               if ci == m
-        then (bi,bj)
-        else let
-          currentCost = normTable!!ci!!cj
-          in
-            if currentCost < normTable!!bi!!bj
-              then
-                indexOfMin normTable (ci, cj+1) (ci, cj)
-              else
-                indexOfMin normTable (ci, cj+1) (bi, bj)
+                then (bi,bj)
+                else let
+                  currentCost = normTable!!ci!!cj
+                  in
+                    if currentCost < normTable!!bi!!bj
+                      then
+                        indexOfMin normTable (ci, cj+1) (ci, cj)
+                      else
+                        indexOfMin normTable (ci, cj+1) (bi, bj)

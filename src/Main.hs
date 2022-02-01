@@ -115,6 +115,23 @@ simulateM m n cycles seed =
     simulationLoop 1 cycles t fullBoard robots babies seed''
     
 
+simulateDijk :: Int -> Int -> Int -> Int -> IO()
+simulateDijk m n cycles seed =
+  do
+    let
+      t = 10
+      x = 'X'
+      perc = 10
+      board = initBoard m n x
+      (board', babies, seed') = generateEnvironment board seed perc
+      (fullBoard, robots, seed'') = generateRobots board' 2 seed'
+    print "Initial board:"
+    pprint fullBoard
+
+    simulationLoop 1 cycles t fullBoard robots babies seed''
+    
+
+
 simulationLoop :: Int -> Int -> Int -> [[Char]] -> [Robot] -> [Baby] -> Int -> IO ()
 simulationLoop cycle tcycle t board robots babies seed =
     if cycle == tcycle
@@ -140,7 +157,7 @@ simulationLoop cycle tcycle t board robots babies seed =
                 -- robot = head robots
                 -- (reacBoard, robot', babies'') = reactiveAgent envBoard robot babies'
                 -- (reacBoard, robot', babies'') = modelBasedAgent envBoard robot babies'
-                (reacBoard, robots', babies'') = simulateRobotsM envBoard robots babies' []
+                (reacBoard, robots', babies'') = simulateRobotsDijk envBoard robots babies' []
               print "Board after agents"
               print robots
               print babies''
@@ -181,6 +198,16 @@ simulateRobotsM board [] babies simulatedRobots = (board, simulatedRobots, babie
 simulateRobotsM board (robot:rs) babies simRobots =
   let
     (board', robot', babies') = modelBasedAgent board robot babies
+    in
+      simulateRobotsM board' rs babies' (simRobots++[robot'])
+
+
+
+simulateRobotsDijk :: [[Char]] -> [Robot] -> [Baby] -> [Robot] -> ([[Char]], [Robot], [Baby])
+simulateRobotsDijk board [] babies simulatedRobots = (board, simulatedRobots, babies)
+simulateRobotsDijk board (robot:rs) babies simRobots =
+  let
+    (board', robot', babies') = dijkstraBasedAgent board robot babies
     in
       simulateRobotsM board' rs babies' (simRobots++[robot'])
 
