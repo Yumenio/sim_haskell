@@ -125,10 +125,42 @@ dijkstra board (i,j) =
       [(1i,1)]
 
 
-iterateDijk :: [[Int]] -> Set (Int, Int) -> Int -> [[Int]]
-iterateDijk costs vis totalNodes =
+iterateDijk :: [[Char]] -> [[Int]] -> Set (Int, Int) -> Int -> [[Int]]
+iterateDijk board costs vis totalNodes =
   if length vis == totalNodes
     then
       costs
     else let
-      
+      x = searchNextDijk board vis
+      vis' = insert x vis
+      adjx = getAdjacents board x (toList vis) ['O', 'Z', 'R']
+      costs' = updateCosts costs adjx
+      in
+        iterateDijk board costs' vis' totalNodes
+
+
+searchNextDijk :: [[Int]] -> Set (Int, Int) -> (Int, Int)
+searchNextDijk board vis =
+  let
+    m = length board
+    n = length $ head board
+    in
+      searchNextDijkAux (0,0) (100001,(-1,-1)) board vis
+
+searchNextDijkAux :: (Int, Int) -> (Int, (Int, Int)) -> [[Int]] -> Set (Int, Int) -> (Int, Int)
+searchNextDijkAux (ci,cj) (best,(bi,bj)) board vis =
+  let
+    m = length board
+    n = length $ head board
+    in
+      if ci == m
+        then (bi,bj)
+        else
+          if cj == n
+            then searchNextDijkAux (ci+1, 0) (best,(bi,bj)) board vis
+            else
+              if board!!ci!!cj < best && not (member (ci,cj) vis)
+                then
+                  searchNextDijkAux (ci, cj+1) (board!!ci!!cj, (ci,cj)) board vis
+                else
+                  searchNextDijkAux (ci, cj+1) (best, (bi, bj)) board vis
