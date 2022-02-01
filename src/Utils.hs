@@ -13,8 +13,8 @@ initBoard m n x  | m == 1 = [fill x n]
 
 subNth0 board i j x = 
   let
-    (h, row:rs) = splitAt i board;
-    (rhead, _:rtail) = splitAt j row;
+    (h, row:rs) = Data.List.splitAt i board;
+    (rhead, _:rtail) = Data.List.splitAt j row;
     newrow = rhead++[x]++rtail
     in h++[newrow]++rs
 
@@ -71,7 +71,7 @@ validPosMap (board, i, j, excl) =
   validPos board i j && notElem (board!!i!!j) excl
 
 rowDim :: (Foldable f, Num b) => f a -> b
-rowDim = foldr (\ x -> (+) 1) 0
+rowDim = Data.List.foldr (\ x -> (+) 1) 0
 
 pprint :: [[Char]] -> IO ()
 pprint [] = putStrLn ""
@@ -86,7 +86,7 @@ dirt ('C':t) = 1 + dirt t
 dirt (_:t) = 0 + dirt t
 
 dirtPerc :: [[Char]] -> Int
-dirtPerc board = let m = length board; n = length $ head board in div (sum (map dirt board)*100) (m*n)
+dirtPerc board = let m = length board; n = length $ head board in div (sum (Data.List.map dirt board)*100) (m*n)
 
 
 cleanPerc board = 100 - dirtPerc board
@@ -102,10 +102,10 @@ getAdjacents :: [[Char]] -> (Int, Int) -> [(Int, Int)] -> [Char] -> [(Int, Int)]
 getAdjacents board (i,j) visited excl =
   let
     candidates = [(board,i,j+1,excl), (board,i,j-1,excl), (board,i+1,j,excl), (board,i-1,j,excl)]
-    validCandidates =  filter validPosMap candidates
-    validCandidates' = map (\(_,i,j,_) -> (i,j)) validCandidates
+    validCandidates =  Data.List.filter validPosMap candidates
+    validCandidates' = Data.List.map (\(_,i,j,_) -> (i,j)) validCandidates
     in
-      validCandidates' \\ visited
+      validCandidates' Data.List.\\ visited
 
 
 -- initBoard m n x  | m == 1 = [fill x n]
@@ -120,9 +120,9 @@ dijkstra board (i,j) =
     bcosts = initBoard m n 100000
     costs = subNth0 bcosts i j 0
     vis = empty
-    minCostPaths = iterateDijk costs vis (m*n)
+    minCostPaths = iterateDijk board costs vis (m*n)
     in
-      [(1i,1)]
+      [(1,1)]
 
 
 iterateDijk :: [[Char]] -> [[Int]] -> Set (Int, Int) -> Int -> [[Int]]
@@ -131,10 +131,10 @@ iterateDijk board costs vis totalNodes =
     then
       costs
     else let
-      x = searchNextDijk board vis
-      vis' = insert x vis
+      x = searchNextDijk costs vis
+      vis' = Data.Set.insert x vis
       adjx = getAdjacents board x (toList vis) ['O', 'Z', 'R']
-      costs' = updateCosts costs adjx
+      costs' = updateCosts board costs x adjx
       in
         iterateDijk board costs' vis' totalNodes
 
@@ -164,3 +164,51 @@ searchNextDijkAux (ci,cj) (best,(bi,bj)) board vis =
                   searchNextDijkAux (ci, cj+1) (board!!ci!!cj, (ci,cj)) board vis
                 else
                   searchNextDijkAux (ci, cj+1) (best, (bi, bj)) board vis
+
+updateCosts :: [[Char]] -> [[Int]] -> (Int, Int) -> [(Int, Int)] -> [[Int]]
+updateCosts _ costs _ [] = costs
+updateCosts board costs (i,j) (adj:adjs) =
+  let
+    nodeCost = costs!!i!!j
+    -- newCosts = Data.List.map (\(i,j) -> ((i,j),nodeCost + costs!!i!!j) ) adjs
+    (adjx, adjy) = adj
+    elem = board!!adjx!!adjy
+    in
+      do
+      case elem of
+        'X' -> let
+          adjCost = 1000
+          newCost = adjCost + nodeCost
+          in
+            if newCost < costs!!adjx!!adjy
+              then let
+                costs' = subNth0 costs adjx adjy newCost
+                in updateCosts board costs' (i,j) adjs
+              else
+                updateCosts board costs (i,j) adjs
+        'C' -> let
+          adjCost = 100
+          newCost = adjCost + nodeCost
+          in
+            if newCost < costs!!adjx!!adjy
+              then let
+                costs' = subNth0 costs adjx adjy newCost
+                in updateCosts board costs' (i,j) adjs
+              else
+                updateCosts board costs (i,j) adjs
+        'B' -> let
+          adjCost = 10
+          newCost = adjCost + nodeCost
+          in
+            if newCost < costs!!adjx!!adjy
+              then let
+                costs' = subNth0 costs adjx adjy newCost
+                in updateCosts board costs' (i,j) adjs
+              else
+                updateCosts board costs (i,j) adjs
+        _ -> error "found an unintended adjacent when updating the costs of dijkstra"
+
+        
+    
+    -- in
+    --   Data.List.map (\((i,j),ncost) -> if costs!!i!!j > ncost then subNth0 costs i j ncost else)
