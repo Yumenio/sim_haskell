@@ -112,46 +112,47 @@ getAdjacents board (i,j) visited excl =
 --                   | m < 1 =  []
 --                   | otherwise = fill x n : initBoard (m-1) n x
 
-dijkstra :: [[Char]] -> (Int, Int) -> [(Int, Int)]
+dijkstra :: [[Char]] -> (Int, Int) -> IO ()
 dijkstra board (i,j) =
   let
     m = length board
     n = length $ head board
-    bcosts = initBoard m n 100000
-    costs = subNth0 bcosts i j 0
+    bcosts = initBoard m n (100000,0)
+    costs = subNth0 bcosts i j (0,0)
     vis = empty
-    minCostPaths = iterateDijk board costs vis (m*n)
+    minCostPaths = iterateDijk board costs vis (m*n) 0
     in
-      [(1,1)]
+      print minCostPaths
 
 
-iterateDijk :: [[Char]] -> [[Int]] -> Set (Int, Int) -> Int -> [[Int]]
-iterateDijk board costs vis totalNodes =
+iterateDijk :: [[Char]] -> [[(Int,Int)]] -> Set (Int, Int) -> Int -> Int -> [[(Int, Int)]]
+iterateDijk board costs vis totalNodes iter=
   if length vis == totalNodes
     then
       costs
     else let
-      x = searchNextDijk costs vis
+      x = searchNextDijk costs vis iter
       vis' = Data.Set.insert x vis
       adjx = getAdjacents board x (toList vis) ['O', 'Z', 'R']
       costs' = updateCosts board costs x adjx
       in
-        iterateDijk board costs' vis' totalNodes
+        iterateDijk board costs' vis' totalNodes (iter+1)
 
 
-searchNextDijk :: [[Int]] -> Set (Int, Int) -> (Int, Int)
-searchNextDijk board vis =
+searchNextDijk :: [[(Int, Int)]] -> Set (Int, Int) -> Int -> (Int, Int)
+searchNextDijk board vis iter =
   let
     m = length board
     n = length $ head board
     in
-      searchNextDijkAux (0,0) (100001,(-1,-1)) board vis
+      searchNextDijkAux (0,0) ((100000, iter),(-1,-1)) board vis
 
-searchNextDijkAux :: (Int, Int) -> (Int, (Int, Int)) -> [[Int]] -> Set (Int, Int) -> (Int, Int)
+searchNextDijkAux :: (Int, Int) -> ((Int,Int), (Int, Int)) -> [[(Int, Int)]] -> Set (Int, Int) -> (Int, Int)
 searchNextDijkAux (ci,cj) (best,(bi,bj)) board vis =
   let
     m = length board
     n = length $ head board
+    (bestCost, bestLength) = best
     in
       if ci == m
         then (bi,bj)
@@ -159,17 +160,18 @@ searchNextDijkAux (ci,cj) (best,(bi,bj)) board vis =
           if cj == n
             then searchNextDijkAux (ci+1, 0) (best,(bi,bj)) board vis
             else
-              if board!!ci!!cj < best && not (member (ci,cj) vis)
+              let (cost, length) = board!!ci!!cj in
+              if not (member (ci,cj) vis) && cost < bestCost
                 then
-                  searchNextDijkAux (ci, cj+1) (board!!ci!!cj, (ci,cj)) board vis
+                  searchNextDijkAux (ci, cj+1) ((cost,length), (ci,cj)) board vis
                 else
                   searchNextDijkAux (ci, cj+1) (best, (bi, bj)) board vis
 
-updateCosts :: [[Char]] -> [[Int]] -> (Int, Int) -> [(Int, Int)] -> [[Int]]
+updateCosts :: [[Char]] -> [[(Int,Int)]] -> (Int, Int) -> [(Int, Int)] -> [[(Int,Int)]]
 updateCosts _ costs _ [] = costs
 updateCosts board costs (i,j) (adj:adjs) =
   let
-    nodeCost = costs!!i!!j
+    (nodeCost, nodeLength) = costs!!i!!j
     -- newCosts = Data.List.map (\(i,j) -> ((i,j),nodeCost + costs!!i!!j) ) adjs
     (adjx, adjy) = adj
     elem = board!!adjx!!adjy
@@ -177,32 +179,38 @@ updateCosts board costs (i,j) (adj:adjs) =
       do
       case elem of
         'X' -> let
-          adjCost = 1000
-          newCost = adjCost + nodeCost
+          moveCost = 1000
+          newCost =  nodeCost + moveCost
+          newLength = nodeLength+1
+          (currentCost,currentLength) = costs!!adjx!!adjy
           in
-            if newCost < costs!!adjx!!adjy
+            if newCost < currentCost
               then let
-                costs' = subNth0 costs adjx adjy newCost
+                costs' = subNth0 costs adjx adjy (newCost,newLength)
                 in updateCosts board costs' (i,j) adjs
               else
                 updateCosts board costs (i,j) adjs
         'C' -> let
-          adjCost = 100
-          newCost = adjCost + nodeCost
+          moveCost = 100
+          newCost =  nodeCost + moveCost
+          newLength = nodeLength+1
+          (currentCost,currentLength) = costs!!adjx!!adjy
           in
-            if newCost < costs!!adjx!!adjy
+            if newCost < currentCost
               then let
-                costs' = subNth0 costs adjx adjy newCost
+                costs' = subNth0 costs adjx adjy (newCost,newLength)
                 in updateCosts board costs' (i,j) adjs
               else
                 updateCosts board costs (i,j) adjs
         'B' -> let
-          adjCost = 10
-          newCost = adjCost + nodeCost
+          moveCost = 10
+          newCost =  nodeCost + moveCost
+          newLength = nodeLength+1
+          (currentCost,currentLength) = costs!!adjx!!adjy
           in
-            if newCost < costs!!adjx!!adjy
+            if newCost < currentCost
               then let
-                costs' = subNth0 costs adjx adjy newCost
+                costs' = subNth0 costs adjx adjy (newCost,newLength)
                 in updateCosts board costs' (i,j) adjs
               else
                 updateCosts board costs (i,j) adjs
