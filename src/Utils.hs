@@ -112,20 +112,21 @@ getAdjacents board (i,j) visited excl =
 --                   | m < 1 =  []
 --                   | otherwise = fill x n : initBoard (m-1) n x
 
-dijkstra :: [[Char]] -> (Int, Int) -> IO ()
+dijkstra :: [[Char]] -> (Int, Int) -> [(Int, Int)]
 dijkstra board (i,j) =
   let
     m = length board
     n = length $ head board
-    bcosts = initBoard m n (100000,0)
-    costs = subNth0 bcosts i j (0,0)
+    bcosts = initBoard m n (100000,[])
+    costs = subNth0 bcosts i j (0,[(i,j)])
     vis = empty
     minCostPaths = iterateDijk board costs vis (m*n) 0
     in
-      print minCostPaths
+      -- print minCostPaths
+      findBestDijkPath minCostPaths
 
 
-iterateDijk :: [[Char]] -> [[(Int,Int)]] -> Set (Int, Int) -> Int -> Int -> [[(Int, Int)]]
+iterateDijk :: [[Char]] -> [[(Int,[(Int,Int)])]] -> Set (Int, Int) -> Int -> Int -> [[(Int,[(Int,Int)])]]
 iterateDijk board costs vis totalNodes iter=
   if length vis == totalNodes
     then
@@ -139,15 +140,15 @@ iterateDijk board costs vis totalNodes iter=
         iterateDijk board costs' vis' totalNodes (iter+1)
 
 
-searchNextDijk :: [[(Int, Int)]] -> Set (Int, Int) -> Int -> (Int, Int)
+searchNextDijk :: [[(Int,[(Int,Int)])]] -> Set (Int, Int) -> Int -> (Int, Int)
 searchNextDijk board vis iter =
   let
     m = length board
     n = length $ head board
     in
-      searchNextDijkAux (0,0) ((100000, iter),(-1,-1)) board vis
+      searchNextDijkAux (0,0) ((100000, []),(-1,-1)) board vis
 
-searchNextDijkAux :: (Int, Int) -> ((Int,Int), (Int, Int)) -> [[(Int, Int)]] -> Set (Int, Int) -> (Int, Int)
+searchNextDijkAux :: (Int, Int) -> ((Int,[(Int,Int)]), (Int, Int)) -> [[(Int,[(Int,Int)])]] -> Set (Int, Int) -> (Int, Int)
 searchNextDijkAux (ci,cj) (best,(bi,bj)) board vis =
   let
     m = length board
@@ -160,18 +161,18 @@ searchNextDijkAux (ci,cj) (best,(bi,bj)) board vis =
           if cj == n
             then searchNextDijkAux (ci+1, 0) (best,(bi,bj)) board vis
             else
-              let (cost, length) = board!!ci!!cj in
+              let (cost, path) = board!!ci!!cj in
               if not (member (ci,cj) vis) && cost < bestCost
                 then
-                  searchNextDijkAux (ci, cj+1) ((cost,length), (ci,cj)) board vis
+                  searchNextDijkAux (ci, cj+1) ((cost,path), (ci,cj)) board vis
                 else
                   searchNextDijkAux (ci, cj+1) (best, (bi, bj)) board vis
 
-updateCosts :: [[Char]] -> [[(Int,Int)]] -> (Int, Int) -> [(Int, Int)] -> [[(Int,Int)]]
+updateCosts :: [[Char]] -> [[(Int,[(Int,Int)])]] -> (Int, Int) -> [(Int, Int)] -> [[(Int, [(Int, Int)])]]
 updateCosts _ costs _ [] = costs
 updateCosts board costs (i,j) (adj:adjs) =
   let
-    (nodeCost, nodeLength) = costs!!i!!j
+    (nodeCost, nodePath) = costs!!i!!j
     -- newCosts = Data.List.map (\(i,j) -> ((i,j),nodeCost + costs!!i!!j) ) adjs
     (adjx, adjy) = adj
     elem = board!!adjx!!adjy
@@ -181,42 +182,73 @@ updateCosts board costs (i,j) (adj:adjs) =
         'X' -> let
           moveCost = 1000
           newCost =  nodeCost + moveCost
-          newLength = nodeLength+1
+          newPath = nodePath++[(adjx,adjy)]
           (currentCost,currentLength) = costs!!adjx!!adjy
           in
             if newCost < currentCost
               then let
-                costs' = subNth0 costs adjx adjy (newCost,newLength)
+                costs' = subNth0 costs adjx adjy (newCost,newPath)
                 in updateCosts board costs' (i,j) adjs
               else
                 updateCosts board costs (i,j) adjs
         'C' -> let
           moveCost = 100
           newCost =  nodeCost + moveCost
-          newLength = nodeLength+1
+          newPath = nodePath++[(adjx,adjy)]
           (currentCost,currentLength) = costs!!adjx!!adjy
           in
             if newCost < currentCost
               then let
-                costs' = subNth0 costs adjx adjy (newCost,newLength)
+                costs' = subNth0 costs adjx adjy (newCost,newPath)
                 in updateCosts board costs' (i,j) adjs
               else
                 updateCosts board costs (i,j) adjs
         'B' -> let
           moveCost = 10
           newCost =  nodeCost + moveCost
-          newLength = nodeLength+1
+          newPath = nodePath++[(adjx,adjy)]
           (currentCost,currentLength) = costs!!adjx!!adjy
           in
             if newCost < currentCost
               then let
-                costs' = subNth0 costs adjx adjy (newCost,newLength)
+                costs' = subNth0 costs adjx adjy (newCost,newPath)
                 in updateCosts board costs' (i,j) adjs
               else
                 updateCosts board costs (i,j) adjs
         _ -> error "found an unintended adjacent when updating the costs of dijkstra"
 
         
-    
-    -- in
-    --   Data.List.map (\((i,j),ncost) -> if costs!!i!!j > ncost then subNth0 costs i j ncost else)
+findBestDijkPath :: [[(Int, [(Int, Int)])]] -> [(Int, Int)]
+findBestDijkPath costTable =
+  let
+    normalizedCosts = Data.List.map (\row -> Data.List.map normalizeFunc row) costTable
+    (minx, miny) = indexOfMin normalizedCosts (0,0) (0,0)
+    (bestCost, bestPath) = costTable!!minx!!miny
+    in
+      bestPath
+
+normalizeFunc :: (Int, [(Int, Int)]) -> Int
+normalizeFunc (cost, path) = let l = length path in if l == 1 then 9999 else div cost l
+
+indexOfMin :: [[Int]] -> (Int, Int) -> (Int, Int) -> (Int, Int)
+indexOfMin normTable (ci, cj) (bi, bj) =
+  let
+    m = length normTable
+    n = length $ head normTable
+    in
+      if ci == m
+        then (bi,bj)
+        else
+          if cj == n
+            then indexOfMin normTable (ci+1, 0) (bi, bj)
+            else
+              if ci == m
+        then (bi,bj)
+        else let
+          currentCost = normTable!!ci!!cj
+          in
+            if currentCost < normTable!!bi!!bj
+              then
+                indexOfMin normTable (ci, cj+1) (ci, cj)
+              else
+                indexOfMin normTable (ci, cj+1) (bi, bj)
