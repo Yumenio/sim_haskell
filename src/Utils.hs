@@ -249,14 +249,11 @@ indexOfMin normTable (ci, cj) (bi, bj) =
         else
           if cj == n
             then indexOfMin normTable (ci+1, 0) (bi, bj)
-            else
-              if ci == m
-                then (bi,bj)
-                else let
-                  currentCost = normTable!!ci!!cj
-                  in
-                    if currentCost < normTable!!bi!!bj
-                      then
-                        indexOfMin normTable (ci, cj+1) (ci, cj)
-                      else
-                        indexOfMin normTable (ci, cj+1) (bi, bj)
+            else let
+              currentCost = normTable!!ci!!cj
+              in
+                if currentCost < normTable!!bi!!bj
+                  then
+                    indexOfMin normTable (ci, cj+1) (ci, cj)
+                  else
+                    indexOfMin normTable (ci, cj+1) (bi, bj)
