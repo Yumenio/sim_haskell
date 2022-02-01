@@ -1,6 +1,7 @@
 module Utils where
 import Random (runRandom, rand)
 import Data.List
+import Data.Set
 
 fill x times  | times == 1 = [x]
               | times < 1 = []
@@ -105,3 +106,29 @@ getAdjacents board (i,j) visited excl =
     validCandidates' = map (\(_,i,j,_) -> (i,j)) validCandidates
     in
       validCandidates' \\ visited
+
+
+-- initBoard m n x  | m == 1 = [fill x n]
+--                   | m < 1 =  []
+--                   | otherwise = fill x n : initBoard (m-1) n x
+
+dijkstra :: [[Char]] -> (Int, Int) -> [(Int, Int)]
+dijkstra board (i,j) =
+  let
+    m = length board
+    n = length $ head board
+    bcosts = initBoard m n 100000
+    costs = subNth0 bcosts i j 0
+    vis = empty
+    minCostPaths = iterateDijk costs vis (m*n)
+    in
+      [(1i,1)]
+
+
+iterateDijk :: [[Int]] -> Set (Int, Int) -> Int -> [[Int]]
+iterateDijk costs vis totalNodes =
+  if length vis == totalNodes
+    then
+      costs
+    else let
+      
