@@ -2,6 +2,8 @@ module Utils where
 import Random (runRandom, rand)
 import Data.List
 import Data.Set
+import Debug.Trace
+import Data.Map.Internal.Debug (node)
 
 fill x times  | times == 1 = [x]
               | times < 1 = []
@@ -131,9 +133,14 @@ iterateDijk board costs vis totalNodes iter=
       x = searchNextDijk costs vis iter
       vis' = Data.Set.insert x vis
       adjx = getAdjacents board x (toList vis) ['O', 'Z', 'R']
-      costs' = updateCosts board costs x adjx
       in
-        iterateDijk board costs' vis' totalNodes (iter+1)
+        if Data.List.null adjx
+          then costs
+        else let
+          costs' = updateCosts board costs x adjx
+          in
+            iterateDijk board costs' vis' totalNodes (iter+1)
+            -- trace (""++panicPrint x adjx vis) iterateDijk board costs' vis' totalNodes (iter+1)
 
 
 searchNextDijk :: [[(Int,[(Int,Int)])]] -> Set (Int, Int) -> Int -> (Int, Int)
@@ -172,8 +179,7 @@ updateCosts board costs (i,j) (adj:adjs) =
     -- newCosts = Data.List.map (\(i,j) -> ((i,j),nodeCost + costs!!i!!j) ) adjs
     (adjx, adjy) = adj
     elem = board!!adjx!!adjy
-    in
-      do
+    in do
       case elem of
         'X' -> let
           moveCost = 1000
@@ -236,7 +242,7 @@ findBestDijkPath costTable =
       bestPath
 
 normalizeFunc :: (Int, [(Int, Int)]) -> Int
-normalizeFunc (cost, path) = let l = length path in if l == 1 then 9999 else div cost l
+normalizeFunc (cost, path) = let l = length path in if l <= 1 then 9999 else div cost l
 
 indexOfMin :: [[Int]] -> (Int, Int) -> (Int, Int) -> (Int, Int)
 indexOfMin normTable (ci, cj) (bi, bj) =
@@ -257,3 +263,25 @@ indexOfMin normTable (ci, cj) (bi, bj) =
                     indexOfMin normTable (ci, cj+1) (ci, cj)
                   else
                     indexOfMin normTable (ci, cj+1) (bi, bj)
+
+donothing :: Int
+donothing = 1
+
+-- panicPrint :: [[(Int, [(Int, Int)])]] -> String
+panicPrint :: (Int, Int) -> [(Int, Int)] -> Set (Int, Int) -> String
+panicPrint node adjs vis =
+  "updated the cost of" ++ adjsToString adjs "nara" ++ "coming from" ++ nodeToString node ++ "\n" ++ "visited" ++ show vis ++ "\n_______________________"
+
+
+nodeToString :: (Int, Int) -> String
+nodeToString (i,j) =
+  show i ++ "," ++ show j ++ ")"
+
+adjsToString :: [(Int, Int)] -> String -> String
+adjsToString [] carry = carry
+adjsToString (adj:tail) carry =
+  let
+    (adjx, adjy) = adj
+    adjString = "  (" ++ show adjx ++ "," ++ show adjy ++ ")"
+    in
+      adjsToString tail carry ++ adjString
