@@ -78,9 +78,16 @@ rowDim = Data.List.foldr (\ x -> (+) 1) 0
 pprint :: [[Char]] -> IO ()
 pprint [] = putStrLn ""
 pprint (r:t) = do
-  print r
+  pprintLine r
   pprint t
 
+pprintLine [] = putStrLn ""
+pprintLine (r:t) =
+  do
+    putStr "|"
+    putStr $ show r
+    putStr "|"
+    pprintLine t
 
 dirt :: [Char] -> Int
 dirt [] = 0
