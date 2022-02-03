@@ -163,47 +163,39 @@ reactiveAgent board robot babies =
           1 ->
             --if there are no babies, then a good option is to just find the nearest C, clean it, and repeat
             --note that finding the path containing more C on it is irrelevant, since the job will be done when ALL C are cleaned, and a plain bfs is MUCH MORE efficient
-            if null babies
-              then
-                let
-                  objPath = lookForObjectiveR board robot
-                  in
-                    if null objPath
-                      then (board, robot, babies)
-                      else let
-                        _:path = objPath
-                        (board', robot') = followPath board robot path 1
-                        in
-                          (board', robot', babies)
-              else
-                if jail_reachable
-                  then let
-                    opt_path = dijkstra board (i,j)
-                    opt_l = length opt_path
-                    in
-                      if opt_l < 2
-                        then (board, robot, babies)
-                        else let
-                          src:path = opt_path
-                          (di, dj) = head path
-                          (board', robot') = followPath board robot path 1
-                          in
-                            if board!!di!!dj == 'B'
-                              then
-                                let
-                                  robot'' = Robot di dj 2 'X'
-                                  nbaby = Baby di dj 2
-                                  carriedBaby = findBabyAt (di, dj) babies
-                                  babies' = delete carriedBaby babies
-                                  babies'' = nbaby:babies'
-                                  in
-                                    (board', robot'', babies'')
-                              else
-                                (board', robot', babies)
-                  else let --dfs ignoring the babies, since the jail is no longer accesible
-                    (_:path, value) = dfsOptimalPathNoBaby (board, (i,j), [], ([],0), ([],-10000))
-                    (board', robot') = followPath board robot path 1
-                    in (board', robot', babies)
+            if jail_reachable
+              then let
+                objPath = lookForObjectiveR board robot
+                opt_l = length objPath
+                in
+                  if opt_l < 2
+                    then (board, robot, babies)
+                    else let
+                      src:path = objPath
+                      (di, dj) = head path
+                      (board', robot') = followPath board robot path 1
+                      in
+                        if board!!di!!dj == 'B'
+                          then
+                            let
+                              robot'' = Robot di dj 2 'X'
+                              nbaby = Baby di dj 2
+                              carriedBaby = findBabyAt (di, dj) babies
+                              babies' = delete carriedBaby babies
+                              babies'' = nbaby:babies'
+                              in
+                                (board', robot'', babies'')
+                          else
+                            (board', robot', babies)
+              else let --dfs ignoring the babies, since the jail is no longer accesible
+                cpath = lookForObjectiveRC board robot
+                in
+                  if null cpath
+                    then (board, robot, babies)
+                    else let
+                      _:path = cpath
+                      (board', robot') = followPath board robot path 1
+                      in (board', robot', babies)
           
 
           2 ->
@@ -374,6 +366,16 @@ lookForObjectiveR board robot =
     (i,j,s) = robotAll robot
     in
       bfsObjR board objectives (i,j)
+
+
+lookForObjectiveRC :: [[Char]] -> Robot -> [(Int, Int)]
+lookForObjectiveRC board robot =
+  let
+    objectives = ['C']
+    (i,j,s) = robotAll robot
+    in
+      bfsObjR board objectives (i,j)
+
 
 lookForBabyJail :: [[Char]] -> Robot -> [(Int, Int)]
 lookForBabyJail board robot =
