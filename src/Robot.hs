@@ -145,76 +145,170 @@ generateRobotsAux board amount seed robots =
 
 reactiveAgent :: [[Char]] -> Robot -> [Baby] -> ([[Char]], Robot, [Baby])
 reactiveAgent board robot babies =
-  let
-    (i, j, s) = robotAll robot
-    beneath = robotBth robot
-    in
-      if beneath == 'C'
-        then let
-          robot' = Robot i j s 'X'
-          in
-            (board, robot', babies)
-        else
-
-      case s of
-        -- looking for nearest objective
-        1 ->
-          let
-            objPath = lookForObjectiveR board robot
+    do
+    let
+      (i,j,s) = robotAll robot
+      jail_reachable = jailReachable board robot
+      beneath = robotBth robot
+      in
+        if beneath == 'C'
+          then let
+            robot' = Robot i j s 'X'
             in
-              if null objPath
-                then
-                  (board, robot, babies)
-                else
-                  let
-                    _:path = objPath
-                    l = length path
-                    (di, dj) = last path
-                    (board', robot') = followPath board robot path 1
-                    in
-                      if l <= 2 && board!!di!!dj=='B'
-                        then
-                          let
-                            robot'' = Robot di dj 2 'B'
-                            nbaby = Baby di dj 2
-                            carriedBaby = findBabyAt (di, dj) babies
-                            babies' = delete carriedBaby babies
-                            babies'' = nbaby:babies'
-                            in
-                              (board', robot'', babies'')
-                        else
+              (board, robot', babies)
+          else
+      
+        case s of
+          --looking for the best path to follow
+          1 ->
+            --if there are no babies, then a good option is to just find the nearest C, clean it, and repeat
+            --note that finding the path containing more C on it is irrelevant, since the job will be done when ALL C are cleaned, and a plain bfs is MUCH MORE efficient
+            if null babies
+              then
+                let
+                  objPath = lookForObjectiveR board robot
+                  in
+                    if null objPath
+                      then (board, robot, babies)
+                      else let
+                        _:path = objPath
+                        (board', robot') = followPath board robot path 1
+                        in
                           (board', robot', babies)
-
-        --carrying a baby
-        2 ->
-          let
-            objPath = lookForBabyJail board robot
-            in
-              if null objPath
-                then --no babyJail cell accessible atm
-                  (board, robot, babies)
-                else
-                  let
-                    src:path = objPath
-                    l = length path
+              else
+                if jail_reachable
+                  then let
+                    opt_path = dijkstra board (i,j)
+                    opt_l = length opt_path
                     in
-                      if l == 1
-                        then
-                          let
-                            dest = last path
-                            (board', robot', babies') = depositBaby board robot babies dest
-                            in (board', robot', babies') --mejorable
-                        else
-                          let
-                            (srci, srcj) = src
-                            (desti, destj) = head path
-                            nbaby = Baby desti destj 2
-                            carriedBaby = findBabyAt (srci, srcj) babies
-                            babies' = delete carriedBaby babies
-                            babies'' = nbaby:babies'
-                            (board', robot') = followPath board robot path 2
-                          in (board', robot', babies'')
-        _ -> (board, robot, babies)
+                      if opt_l < 2
+                        then (board, robot, babies)
+                        else let
+                          src:path = opt_path
+                          (di, dj) = head path
+                          (board', robot') = followPath board robot path 1
+                          in
+                            if board!!di!!dj == 'B'
+                              then
+                                let
+                                  robot'' = Robot di dj 2 'X'
+                                  nbaby = Baby di dj 2
+                                  carriedBaby = findBabyAt (di, dj) babies
+                                  babies' = delete carriedBaby babies
+                                  babies'' = nbaby:babies'
+                                  in
+                                    (board', robot'', babies'')
+                              else
+                                (board', robot', babies)
+                  else let --dfs ignoring the babies, since the jail is no longer accesible
+                    (_:path, value) = dfsOptimalPathNoBaby (board, (i,j), [], ([],0), ([],-10000))
+                    (board', robot') = followPath board robot path 1
+                    in (board', robot', babies)
+          
+
+          2 ->
+            if jail_reachable
+              then let
+                objPath = lookForBabyJail board robot
+                in
+                  if null objPath
+                    then
+                      (board, robot, babies)
+                    else
+                      let
+                        src:path = objPath
+                        l = length path
+                        in
+                          if l == 1
+                            then
+                              let
+                                dest = last path
+                                (board', robot', babies') = depositBaby board robot babies dest
+                                in (board', robot', babies') --mejorable
+                            else
+                              let
+                                (srci, srcj) = src
+                                (desti, destj) = head path
+                                nbaby = Baby desti destj 2
+                                carriedBaby = findBabyAt (srci, srcj) babies
+                                babies' = delete carriedBaby babies
+                                babies'' = nbaby:babies'
+                                (board', robot') = followPath board robot path 1
+                              in (board', robot', babies'')
+              else  -- acá tocaría soltar rápido al bebé de ser posible, pero kepereza
+                (board, robot, babies)
+          _ -> (board, robot, babies)
+
+  -- let
+  --   (i, j, s) = robotAll robot
+  --   beneath = robotBth robot
+  --   in
+  --     if beneath == 'C'
+  --       then let
+  --         robot' = Robot i j s 'X'
+  --         in
+  --           (board, robot', babies)
+  --       else
+
+  --     case s of
+  --       -- looking for nearest objective
+  --       1 ->
+  --         let
+  --           objPath = lookForObjectiveR board robot
+  --           in
+  --             if null objPath
+  --               then
+  --                 (board, robot, babies)
+  --               else
+  --                 let
+  --                   _:path = objPath
+  --                   l = length path
+  --                   (di, dj) = last path
+  --                   (board', robot') = followPath board robot path 1
+  --                   in
+  --                     if l <= 2 && board!!di!!dj=='B'
+  --                       then
+  --                         let
+  --                           robot'' = Robot di dj 2 'B'
+  --                           nbaby = Baby di dj 2
+  --                           carriedBaby = findBabyAt (di, dj) babies
+  --                           babies' = delete carriedBaby babies
+  --                           babies'' = nbaby:babies'
+  --                           in
+  --                             (board', robot'', babies'')
+  --                       else
+  --                         (board', robot', babies)
+
+  --       --carrying a baby
+  --       2 ->
+  --         let
+  --           objPath = lookForBabyJail board robot
+  --           in
+  --             if null objPath
+  --               then --no babyJail cell accessible atm
+  --                 (board, robot, babies)
+  --               else
+  --                 let
+  --                   src:path = objPath
+  --                   l = length path
+  --                   in
+  --                     if l == 1
+  --                       then
+  --                         let
+  --                           dest = last path
+  --                           (board', robot', babies') = depositBaby board robot babies dest
+  --                           in (board', robot', babies') --mejorable
+  --                       else
+  --                         let
+  --                           (srci, srcj) = src
+  --                           (desti, destj) = head path
+  --                           nbaby = Baby desti destj 2
+  --                           carriedBaby = findBabyAt (srci, srcj) babies
+  --                           babies' = delete carriedBaby babies
+  --                           babies'' = nbaby:babies'
+  --                           (board', robot') = followPath board robot path 1
+  --                         in (board', robot', babies'')
+  --       _ -> (board, robot, babies)
 
 
 followPath :: [[Char]] -> Robot -> [(Int,Int)] -> Int -> ([[Char]], Robot)
@@ -246,7 +340,7 @@ depositBaby board robot babies (di, dj)=
     carriedBaby = findBabyAt (i,j) babies
     babies' = delete carriedBaby babies
     board' = subNth0 board di dj 'Z'
-    robot' = Robot i j 1 beneath
+    robot' = Robot i j 1 'X'
     in
       (board', robot', babies')
 

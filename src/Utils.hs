@@ -229,7 +229,7 @@ updateCosts board costs (i,j) (adj:adjs) =
                 in updateCosts board costs' (i,j) adjs
               else
                 updateCosts board costs (i,j) adjs
-        _ -> error "found an unintended adjacent when updating the costs of dijkstra"
+        _ -> error "found an unintended adjacent when updating the costs of dijkstra algorithm"
 
         
 findBestDijkPath :: [[(Int, [(Int, Int)])]] -> [(Int, Int)]

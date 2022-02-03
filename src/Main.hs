@@ -83,24 +83,8 @@ generateObstaclesAux board amount seed  | amount == 0 = (board, seed)
                                             in generateObstaclesAux nboard (amount-1) y 
 
 
-simulateR :: Int -> Int -> Int -> Int -> IO()
-simulateR m n cycles seed =
-  do
-    let
-      t = 10
-      x = 'X'
-      perc = 10
-      board = initBoard m n x
-      (board', babies, seed') = generateEnvironment board seed perc
-      (fullBoard, robots, seed'') = generateRobots board' 1 seed'
-    print "Initial board:"
-    pprint fullBoard
-
-    simulationLoop 1 cycles t fullBoard robots babies seed''      
-    
-
-simulateM :: Int -> Int -> Int -> Int -> IO()
-simulateM m n cycles seed =
+simulate :: [Char] -> Int -> Int -> Int -> Int -> IO()
+simulate robotType m n cycles seed =
   do
     let
       t = 10
@@ -112,28 +96,13 @@ simulateM m n cycles seed =
     print "Initial board:"
     pprint fullBoard
 
-    simulationLoop 1 cycles t fullBoard robots babies seed''
-    
-
-simulateDijk :: Int -> Int -> Int -> Int -> IO()
-simulateDijk m n cycles seed =
-  do
-    let
-      t = 10
-      x = 'X'
-      perc = 10
-      board = initBoard m n x
-      (board', babies, seed') = generateEnvironment board seed perc
-      (fullBoard, robots, seed'') = generateRobots board' 2 seed'
-    print "Initial board:"
-    pprint fullBoard
-
-    simulationLoop 1 cycles t fullBoard robots babies seed''
+    simulationLoop robotType 1 cycles t fullBoard robots babies seed''
     
 
 
-simulationLoop :: Int -> Int -> Int -> [[Char]] -> [Robot] -> [Baby] -> Int -> IO ()
-simulationLoop cycle tcycle t board robots babies seed =
+
+simulationLoop :: [Char] -> Int -> Int -> Int -> [[Char]] -> [Robot] -> [Baby] -> Int -> IO ()
+simulationLoop rType cycle tcycle t board robots babies seed =
     if cycle == tcycle
       then return ()
       else do
@@ -155,14 +124,14 @@ simulationLoop cycle tcycle t board robots babies seed =
 
               let
                 -- robot = head robots
-                -- (reacBoard, robot', babies'') = reactiveAgent envBoard robot babies'
-                -- (reacBoard, robot', babies'') = modelBasedAgent envBoard robot babies'
-                (reacBoard, robots', babies'') = simulateRobotsDijk envBoard robots babies' []
+                -- (reacBoard, robots', babies'') = simulateRobotsR envBoard robots babies' []
+                -- (reacBoard, robots', babies'') = simulateRobotsM envBoard robots babies' []
+                (reacBoard, robots', babies'') = simulateRobots rType envBoard robots babies' []
               print "Board after agents"
               print robots
               print babies''
               pprint reacBoard
-              simulationLoop (cycle+1) tcycle t reacBoard robots' babies'' seed'
+              simulationLoop rType (cycle+1) tcycle t reacBoard robots' babies'' seed'
 
 
 generateEnvironment board seed perc =
@@ -209,7 +178,28 @@ simulateRobotsDijk board (robot:rs) babies simRobots =
   let
     (board', robot', babies') = dijkstraBasedAgent board robot babies
     in
-      simulateRobotsM board' rs babies' (simRobots++[robot'])
+      simulateRobotsDijk board' rs babies' (simRobots++[robot'])
+
+
+simulateRobots :: [Char] -> [[Char]] -> [Robot] -> [Baby] -> [Robot] -> ([[Char]], [Robot], [Baby])
+simulateRobots rType board [] babies simulatedRobots = (board, simulatedRobots, babies)
+simulateRobots rType board (robot:rs) babies simRobots
+  | rType == "r" =
+  let
+    (board', robot', babies') = reactiveAgent board robot babies
+    in
+      simulateRobots rType board' rs babies' (simRobots++[robot'])
+  | rType == "m" =
+  let
+    (board', robot', babies') = modelBasedAgent board robot babies
+    in
+      simulateRobots rType board' rs babies' (simRobots++[robot'])
+  | rType == "d" =
+  let
+    (board', robot', babies') = dijkstraBasedAgent board robot babies
+    in
+      simulateRobots rType board' rs babies' (simRobots++[robot'])
+  | otherwise = error "invalid robot type"
 
 
 simulateRobotsR :: [[Char]] -> [Robot] -> [Baby] -> [Robot] -> ([[Char]], [Robot], [Baby])
@@ -243,4 +233,4 @@ simulateRobotsMIO board (robot:rs) babies simRobots =
 
 
 main :: IO ()
-main = simulateM 5 5 100 42
+main = simulate "d" 5 5 100 42
