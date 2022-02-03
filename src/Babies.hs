@@ -1,5 +1,5 @@
 module Babies where
-import Utils (subNth0, getBoardIndex, randomAdj, randomAdj8)
+import Utils (subNth0, getBoardIndex, randomAdj, randomAdj8, validPos)
 import Random (rand, runRandom)
 
 data Baby = Baby {babyRow :: Int, babyCol :: Int, babyState :: Int} deriving (Show, Eq)
@@ -87,7 +87,7 @@ moveDownB board baby =
 -- cleanR board i j = 
 
 moveAnyB board i j deltaI deltaJ sub =
-  if canMoveB board (i+deltaI) (j+deltaJ)
+  if canMoveB board (i,j) (i+deltaI,j+deltaJ)
     then
       let
         oldItem = board!!i!!j;
@@ -106,13 +106,45 @@ moveAnyB board i j deltaI deltaJ sub =
 
 
 
-canMoveB :: [[Char]] -> Int -> Int -> Bool
-canMoveB board i j =
+canMoveB :: [[Char]] -> (Int,Int) -> (Int,Int) -> Bool
+canMoveB board (si,sj) (di,dj) =
   let
-    elem = board!!i!!j
+    elem = board!!di!!dj
     in  -- O => Obstacle, C => Crap,    R => Robot,     B => Baby,    S => BabyJail,  Z => Baby in jail xd
-      not (elem == 'O' || elem == 'C' || elem == 'R' || elem == 'B' || elem == 'S' || elem == 'Z')
+      if elem == 'O'
+        then
+          canPushObstacle board (si,sj) (di,dj)
+        else
+          not (elem == 'C' || elem == 'R' || elem == 'B' || elem == 'S' || elem == 'Z')
 
+canPushObstacle board (fromi, fromj) (toi, toj) =
+  let
+    dx = toi - fromi
+    dy = toj - fromj
+    fi = toi + dx
+    fj = toj + dy
+    in
+      validPos board fi fj && (
+       if
+        board!!fi!!fj == 'O'
+        then
+          canPushObstacle board (toi, toj) (fi, fj)
+        else
+          board!!fi!!fj == 'X'
+      )
+
+pushObstacle board (fromi, fromj) (toi, toj) =
+  let
+    dx = toi - fromi
+    dy = toj - fromj
+    fi = toi + dx
+    fj = toj + dy
+    in
+      if board!!fi!!fj == 'X'
+        then
+          subNth0 board fi fj 'O'
+        else
+          pushObstacle board (toi, toj) (fi,fj)
 
 
 genBabyJail :: [[Char]] -> Int -> Int -> [[Char]]
@@ -177,14 +209,22 @@ moveBabyAux board baby seed try =
     (i,j,s) = babyAll baby
     (i', j', seed') = randomAdj board i j seed
     in
-      if canMoveB board i' j'
+      if canMoveB board (i,j) (i', j')
         then
-          let
-            board' = subNth0 board i' j' 'B'
-            board'' = subNth0 board' i j 'X' --clear the old position
-            baby' = Baby i' j' 1
-            in
-              (board'', baby', seed')
+          if board!!i'!!j' == 'O'
+            then let
+              board' = pushObstacle board (i,j) (i',j')
+              board'' = subNth0 board' i' j' 'B'
+              board''' = subNth0 board'' i j 'X' --clear the old position
+              baby' = Baby i' j' 1
+              in
+                (board''', baby', seed')
+            else let
+              board' = subNth0 board i' j' 'B'
+              board'' = subNth0 board' i j 'X' --clear the old position
+              baby' = Baby i' j' 1
+              in
+                (board'', baby', seed')
         else
           moveBabyAux board baby seed' (try-1)
 
