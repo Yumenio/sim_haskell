@@ -813,10 +813,16 @@ dijkstraBasedAgent board robot babies =
                                     (board', robot'', babies'')
                               else
                                 (board', robot', babies)
-                  else let --dfs ignoring the babies, since the jail is no longer accesible
-                    (_:path, value) = dfsOptimalPathNoBaby (board, (i,j), [], ([],0), ([],-10000))
-                    (board', robot') = followPath board robot path 1
-                    in (board', robot', babies)
+                  else let --bfs ignoring the babies, since the jail is no longer accesible
+                    -- (_:path, value) = dfsOptimalPathNoBaby (board, (i,j), [], ([],0), ([],-10000))
+                    objPath = lookForObjectiveRC board robot
+                    in
+                      if null objPath
+                        then (board, robot, babies)
+                        else let
+                          (_:path) = objPath
+                          (board', robot') = followPath board robot path 1
+                          in (board', robot', babies)
           
 
           2 ->
