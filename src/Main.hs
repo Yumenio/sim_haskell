@@ -114,23 +114,29 @@ simulationLoop rType cycle tcycle t board robots babies seed =
             do
               putStr "Clean % = "
               print cleanPercentage
-              -- if cleanPercentage > 59
-              --   then do
-              --     print "Objective complete"
-              --     return()
-              --   else do
               let
                 (envBoard, babies', seed') = simulateEnvironment 1 boardd babies seedd
               print "Board after environment sim:"
               -- print babies'
               pprint envBoard
-              let
-                (reacBoard, robots', babies'') = simulateRobotsTimes t rType envBoard robots babies'
-              print "Board after agents"
-              -- print robots
-              -- print babies''
-              pprint reacBoard
-              simulationLoop rType (cycle+1) tcycle t reacBoard robots' babies'' seed'
+              if cleanPercentage < 80
+                then let
+                  (reacBoard, robots', babies'') = simulateRobotsTimes t rType envBoard robots babies'
+                  in do
+                    print "Board after agents"
+                    pprint reacBoard
+                    simulationLoop rType (cycle+1) tcycle t reacBoard robots' babies'' seed'
+                else let
+                  (reacBoard, robots', babies'') = (envBoard, robots, babies')
+                  in do
+                    print "Board after agents"
+                    pprint reacBoard
+                    simulationLoop rType (cycle+1) tcycle t reacBoard robots' babies'' seed'
+              -- print "Board after agents"
+              -- -- print robots
+              -- -- print babies''
+              -- pprint reacBoard
+              -- simulationLoop rType (cycle+1) tcycle t reacBoard robots' babies'' seed'
 
 
 generateEnvironment board seed perc =
