@@ -189,7 +189,7 @@ updateCosts board costs (i,j) (adj:adjs) =
     in do
       case elem of
         'X' -> let
-          moveCost = 1000
+          moveCost = 1
           newCost =  nodeCost + moveCost
           newPath = nodePath++[(adjx,adjy)]
           (currentCost,currentLength) = costs!!adjx!!adjy
@@ -201,7 +201,7 @@ updateCosts board costs (i,j) (adj:adjs) =
               else
                 updateCosts board costs (i,j) adjs
         'C' -> let
-          moveCost = 100
+          moveCost = -100
           newCost =  nodeCost + moveCost
           newPath = nodePath++[(adjx,adjy)]
           (currentCost,currentLength) = costs!!adjx!!adjy
@@ -213,7 +213,7 @@ updateCosts board costs (i,j) (adj:adjs) =
               else
                 updateCosts board costs (i,j) adjs
         'B' -> let
-          moveCost = 10
+          moveCost = -10
           newCost =  nodeCost + moveCost
           newPath = nodePath++[(adjx,adjy)]
           (currentCost,currentLength) = costs!!adjx!!adjy
@@ -225,7 +225,7 @@ updateCosts board costs (i,j) (adj:adjs) =
               else
                 updateCosts board costs (i,j) adjs
         'S' -> let
-          moveCost = 10000
+          moveCost = 1
           newCost =  nodeCost + moveCost
           newPath = nodePath++[(adjx,adjy)]
           (currentCost,currentLength) = costs!!adjx!!adjy
@@ -249,7 +249,7 @@ findBestDijkPath costTable =
       bestPath
 
 normalizeFunc :: (Int, [(Int, Int)]) -> Int
-normalizeFunc (cost, path) = let l = length path in if l <= 1 then 9999 else div cost l
+normalizeFunc (cost, path) = let l = length path in if l <= 1 then 9999 else cost --div cost l
 
 indexOfMin :: [[Int]] -> (Int, Int) -> (Int, Int) -> (Int, Int)
 indexOfMin normTable (ci, cj) (bi, bj) =
