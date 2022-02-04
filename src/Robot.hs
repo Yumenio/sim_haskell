@@ -406,7 +406,7 @@ appendPath queue path [] = queue
 appendPath queue path (newItemForPath:rest) =
   let
     newPath = path ++ [newItemForPath]
-    queue' = queue ++ [newPath]
+    queue' = queue ++ [newPath] --asd
     in
       appendPath queue' path rest
 
