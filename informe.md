@@ -43,7 +43,7 @@ El objetivo del Robot de Casa es mantener la casa limpia. Se considera la casa l
 
 
 
-### Principales Ideas
+### Principales Ideas e Implementación
 
 El problema planteado consiste en mantener un tablero libre de suciedad, el cual evoluciona con el tiempo. Una primera idea, bastante básica, para diseñar un robot que sea capaz de mantener la suciedad a raya, consiste en ir secuencialmente lidiando con los problemas más cercanos al robot. Esto es, buscar un camino válido que le permita llegar al robot a un niño para que lo cargue y posteriormente dejarlo en el corral, o la vía hasta la casilla llena de suciedad más cercana al robot en cuestión. Este agente sería un agente reactivo, con la particularidad de que, debido a especificaciones del problema, conoce todo el entorno, pero solamente tiene en cuenta aquellas "amenazas" más cercanas para deshacerse de ellas cuanto antes, consecutivamente.
 
@@ -53,4 +53,64 @@ Luego de pensar unos segundos, está claro que esta solución es sencilla, pero 
 
 
 
-La idea anterior parece perfecta en papel, pero en la práctica es fácil darse cuenta de cuan ineficiente resulta, pues si bien nos da la solución óptima, su coste computacional es exponencial, para tableros de dimensiones mínimamente considerables nuestro algoritmo no terminaría en un tiempo razonable. De modo que es necesario mejorar esta idea para disminuir su tiempo de ejecución, mientras se mantiene la esencia, utilizar el camino que maximice la cantidad de problemas que podemos resolver durante el recorrido. Para esto, se utilizó la idea del algoritmo de caminos de costos mínimos desde un origen *s* de Dijkstra. Queremos hallar
+La idea anterior parece perfecta en papel, pero en la práctica es fácil darse cuenta de cuan ineficiente resulta, pues si bien nos da la solución óptima, su coste computacional es exponencial, para tableros de dimensiones mínimamente considerables nuestro algoritmo no terminaría en un tiempo razonable. De modo que es necesario mejorar esta idea para disminuir su tiempo de ejecución, mientras se mantiene la esencia, utilizar el camino que maximice la cantidad de problemas que podemos resolver durante el recorrido. Para esto, se utilizó la idea del algoritmo de caminos de costo mínimo desde un origen *s* de Dijkstra. Queremos hallar la secuencia de casillas(camino) que contenga más suciedad mientras se avanza a un bebé, utilizando aristas con costos de manera tal que avanzar a un bebé siempre mejore el costo, avanzar a una suciedad también lo mejore pero no tanto, y moverse por una casilla vacía lo incremente ligeramente, luego de ejecutar el algoritmo, obtenemos en tiempo polinomial el árbol de caminos de costo mínimo desde el origen especificado, en este caso, desde la casilla del robot a mover.
+
+
+
+Posteriormente se incluyeron algunas mejoras basadas en el estado del tablero, por ejemplo, en caso de no ser alcanzable una casilla del corral donde de positar a los bebés, en ese momento no tiene sentido buscar un camino que contenga bebés, así que se realiza un simple bfs hasta la suciedad más cercana.
+
+
+
+#### Consideraciones
+
+Los parámetros que se variaron en las simulaciones fueron:
+
+* MxN: dimensiones del tablero
+* T: cantidad de ciclos en los que se mueven los robots antes de que el ambiente varíe
+* Porcentaje de basura inicial
+* Cantidad de bebés
+* Cantidad de robots
+
+
+
+De los tres modelos de agentes implementados, luego de varias simulaciones con distintos parámetros para el ambiente, se obtuvo que casi siempre el mejor desempeño lo tenía el *goal-based agent* que utiliza el algoritmo de Dijkstra para encontrar el mejor camino. Para valores muy grandes de M y N, el agente *goal-based* que no utilizaba Dijkstra, sino un dfs, era extremadamente ineficiente, y para valores razonables tenía una eficacia parecida a su alternativa. Ambos *goal-based agents* tienen mejor desempeño que el agente reactivo para valores de t$\gg$1, sin embargo, cuando t=1 el agente reactivo era la gran mayoría de las veces el que mejor podía mantener el tablero libre de suciedad. De manera intuitiva, esto se puede explicar porque como las acciones de limpiar y depositar niños ocupan un turno completo para completarlas, la ventaja que se obtiene de escoger una estrategia aparentemente óptima, en lugar de rápida, se anula prácticamente; además, cada t unidades de tiempo se genera una pequeña cantidad(7%) de suciedad de manera aleatoria en el tablero.
+
+
+
+
+
+
+
+Para ejecutar una simulación con el código provisto, se debe cargar el archivo Main.hs, el cual contiene las funciones principales de la simulación, entre ellas la función principal, **simulate**, que recibe como parámetros:
+
+* El tipo de agente a ejecutar: {"r", "m", "d"}
+  * "r" -> reactive
+  * "m" -> *goal-based* con dfs
+  * "d" -> *goal-based* con Dijkstra
+* M: la cantidad de filas del tablero
+* N: la cantidad de columnas del tablero
+* T: el valor de t para la cantidad de turnos que tienen los robots antes de que cambie el ambiente
+* C: la cantidad de ciclos para los que se desea mantener la simulación ejecutándose
+* seed: un número entero que se utiliza para generar números aleatorios de manera pura en Haskell, dos simulaciones con el mismo valor para todos sus parámetros, incluyendo este último, se comporta de forma determinista, pues para el mismo seed la secuencia de números aleatorios que se genera es la misma.
+
+Ejemplo:
+
+simulate "d" 8 10 5 80 42
+
+corre la simulación con un tablero de 8*10, donde un 7% serán bebés , 3% robots, 10% serán obstáculos, un la suciedad inicial rondará entre 40% y 80%, t=5, se ejecutarán 80 ciclos, y la seed para el programa es 42.
+
+
+
+
+
+**m = 8, n = 10, t = 1**
+
+![Alt text](./img/example_of_execution.png "Example of execution")
+
+
+
+
+
+**m=8, n=10, t=5**
+
+![Alt text](./img/example_of_execution_2.png "Example of execution with greater t")

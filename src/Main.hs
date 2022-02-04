@@ -83,13 +83,12 @@ generateObstaclesAux board amount seed  | amount == 0 = (board, seed)
                                             in generateObstaclesAux nboard (amount-1) y 
 
 
-simulate :: [Char] -> Int -> Int -> Int -> Int -> IO()
-simulate robotType m n cycles seed =
+simulate :: [Char] -> Int -> Int -> Int -> Int -> Int -> IO()
+simulate robotType m n t cycles seed =
   do
     let
-      t = 10
       x = 'X'
-      perc = 10
+      perc = 80
       board = initBoard m n x
       (board', babies, seed') = generateEnvironment board seed perc
       (fullBoard, robots, seed'') = generateRobots board' 2 seed'
@@ -115,21 +114,21 @@ simulationLoop rType cycle tcycle t board robots babies seed =
             do
               putStr "Clean % = "
               print cleanPercentage
+              -- if cleanPercentage > 59
+              --   then do
+              --     print "Objective complete"
+              --     return()
+              --   else do
               let
                 (envBoard, babies', seed') = simulateEnvironment 1 boardd babies seedd
-
               print "Board after environment sim:"
               -- print babies'
               pprint envBoard
-
               let
-                -- robot = head robots
-                -- (reacBoard, robots', babies'') = simulateRobotsR envBoard robots babies' []
-                -- (reacBoard, robots', babies'') = simulateRobotsM envBoard robots babies' []
-                (reacBoard, robots', babies'') = simulateRobots rType envBoard robots babies' []
+                (reacBoard, robots', babies'') = simulateRobotsTimes t rType envBoard robots babies'
               print "Board after agents"
-              print robots
-              print babies''
+              -- print robots
+              -- print babies''
               pprint reacBoard
               simulationLoop rType (cycle+1) tcycle t reacBoard robots' babies'' seed'
 
@@ -138,14 +137,13 @@ generateEnvironment board seed perc =
   do
     let
       x = 'X'
-      perc = 10
       m = length board
       n = length $ head board
       babyCount = 1 + div (m*n*10) 100
       -- babyCount = 1
       -- board = initBoard m n x
-      (dirtiedBoard, seed') = generateInitialDirt board 7 seed
-      (board', seed'') = generateObstacles dirtiedBoard perc seed'
+      (dirtiedBoard, seed') = generateInitialDirt board perc seed
+      (board', seed'') = generateObstacles dirtiedBoard 7 seed'
       board'' = genBabyJail board' babyCount 0
       (board''', babies, seed''') = generateBabies board'' babyCount seed''
       in
@@ -180,6 +178,17 @@ simulateRobotsDijk board (robot:rs) babies simRobots =
     in
       simulateRobotsDijk board' rs babies' (simRobots++[robot'])
 
+
+simulateRobotsTimes :: Int -> [Char] -> [[Char]] -> [Robot] -> [Baby] -> ([[Char]], [Robot], [Baby])
+-- simulateRobotsTimes 0 rType board robots babies = (board, robots, babies)
+simulateRobotsTimes cycles rType board robots babies
+  | cycles <= 0 = (board, robots, babies)
+  | otherwise =
+    let
+      (board', robots', babies') = simulateRobots rType board robots babies []
+      cycles' = cycles - 1
+      in
+        simulateRobotsTimes cycles' rType board' robots' babies'
 
 simulateRobots :: [Char] -> [[Char]] -> [Robot] -> [Baby] -> [Robot] -> ([[Char]], [Robot], [Baby])
 simulateRobots rType board [] babies simulatedRobots = (board, simulatedRobots, babies)
@@ -233,4 +242,4 @@ simulateRobotsMIO board (robot:rs) babies simRobots =
 
 
 main :: IO ()
-main = simulate "d" 5 5 100 42
+main = simulate "d" 5 5 7 100 42
