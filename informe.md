@@ -12,6 +12,10 @@
 
 
 
+<div>
+<a href="https://github.com/Yumenio/sim_haskell">Github</a>
+</div>
+
 
 
 ### Problema
@@ -49,15 +53,15 @@ El problema planteado consiste en mantener un tablero libre de suciedad, el cual
 
 
 
-Luego de pensar unos segundos, está claro que esta solución es sencilla, pero está lejos de ser óptima. El caso es que los niños suponen un problema muchísimo más grande que la simple suciedad, los niños son al final, la principal fuente de suciedad en el sistema, así que ocuparnos de ellos debería ser la prioridad, pero el agente descrito anteriormente ataca el problema más cercano, y en caso de tener una casilla sucia a la misma distancia que una casilla con un bebé, no discernirá entre sus opciones y lidiará con cualquiera de ellas, arbitrariamente. Una mejora a esto sería entonces primero deshacernos de los bebés, y una vez hecho esto preocuparnos por la suciedad restante, la cual ya no se incrementará al ritmo de antes. Y si pensamos un poco más allá, sería incluso mejor si elegimos la secuencia de pasos que "maximice" la cantidad de problemas con los que lidiamos. Es decir, si tenemos 3 caminos para llegar a un bebé, será mejor elegir aquel que tenga mas suciedad en su recorrido para limpiarla según nos acercamos. Para ello, a cada posible recorrido en el tablero le podemos asignar un costo, donde, movernos a una casilla vacía es lo peor(aunque muchas veces sea obligatorio para llegar al objetivo), utilizar casillas sucias es bueno, y llegar a casillas ocupadas por un bebé es evidentemente lo mejor. Para esto se puede hacer un recorrido en profundidad por el tablero hasta alcanzar un bebé, dándole a cada paso que damos un costo, mayor para movimientos infructuosos, mediano para casillas con basura, y el menor para el movimiento en el cual llegamos a un bebé. Finalmente, nos quedamos con el mejor de todos estos recorridos según los vamos descubriendo. Este ya sería un *goal-based agent*, donde las decisiones tomadas no son tan triviales como encargarse del problema más cercano, y se trabaja mucho más enfocado al objetivo planteado, que es mantener la casa tan limpia como sea posible.
+Luego de pensar unos segundos, está claro que esta solución es sencilla, pero está lejos de ser óptima. El caso es que los niños suponen un problema muchísimo más grande que la simple suciedad, los niños son al final, la principal fuente de suciedad en el sistema, así que ocuparnos de ellos debería ser la prioridad, pero el agente descrito anteriormente ataca el problema más cercano, y en caso de tener una casilla sucia a la misma distancia que una casilla con un bebé, no discernirá entre sus opciones y lidiará con cualquiera de ellas, arbitrariamente. Una mejora a esto sería entonces primero deshacernos de los bebés, y una vez hecho esto preocuparnos por la suciedad restante, la cual ya no se incrementará al ritmo de antes. Y si pensamos un poco más allá, sería incluso mejor si elegimos la secuencia de pasos que "maximice" la cantidad de problemas con los que lidiamos. Es decir, si tenemos 3 caminos para llegar a un bebé, será mejor elegir aquel que tenga más suciedad en su recorrido para limpiarla según nos acercamos, teniendo siempre en mente que el camino sea relativamente corto. Para ello, a cada posible recorrido en el tablero le podemos asignar un costo, donde, movernos a una casilla vacía es lo peor(aunque muchas veces sea obligatorio para llegar al objetivo), utilizar casillas sucias es bueno, y llegar a casillas ocupadas por un bebé es evidentemente lo mejor. Para esto se puede hacer un recorrido en profundidad por el tablero hasta alcanzar un bebé, dándole a cada paso que damos un costo, mayor para movimientos infructuosos, mediano para casillas con basura, y el menor para el movimiento en el cual llegamos a un bebé. Finalmente, nos quedamos con el mejor de todos estos recorridos según los vamos descubriendo. Este ya sería un agente proactivo, donde las decisiones tomadas no son tan triviales como encargarse del problema más cercano, y se trabaja mucho más enfocado al objetivo planteado, que es mantener la casa tan limpia como sea posible.
 
 
 
-La idea anterior parece perfecta en papel, pero en la práctica es fácil darse cuenta de cuan ineficiente resulta, pues si bien nos da la solución óptima, su coste computacional es exponencial, para tableros de dimensiones mínimamente considerables nuestro algoritmo no terminaría en un tiempo razonable. De modo que es necesario mejorar esta idea para disminuir su tiempo de ejecución, mientras se mantiene la esencia, utilizar el camino que maximice la cantidad de problemas que podemos resolver durante el recorrido. Para esto, se utilizó la idea del algoritmo de caminos de costo mínimo desde un origen *s* de Dijkstra. Queremos hallar la secuencia de casillas(camino) que contenga más suciedad mientras se avanza a un bebé, utilizando aristas con costos de manera tal que avanzar a un bebé siempre mejore el costo, avanzar a una suciedad también lo mejore pero no tanto, y moverse por una casilla vacía lo incremente ligeramente, luego de ejecutar el algoritmo, obtenemos en tiempo polinomial el árbol de caminos de costo mínimo desde el origen especificado, en este caso, desde la casilla del robot a mover.
+La idea anterior parece perfecta en papel, pero en la práctica es fácil darse cuenta de cuan ineficiente resulta, pues si bien nos da la solución óptima, su coste computacional es exponencial, para tableros de dimensiones mínimamente considerables nuestro algoritmo no terminaría en un tiempo razonable. De modo que es necesario mejorar esta idea para disminuir su tiempo de ejecución mientras se mantiene la esencia, utilizar el camino más corto que maximice la cantidad de problemas que podemos resolver durante el recorrido. Para esto, se utilizó la idea del algoritmo de caminos de costo mínimo desde un origen *s* de Dijkstra. Queremos hallar la secuencia de casillas(camino) que contenga más suciedad mientras se avanza a un bebé, utilizando aristas con costos de manera tal que avanzar a un bebé siempre mejore el costo, avanzar a una suciedad también lo mejore pero no tanto, y moverse por una casilla vacía lo incremente ligeramente. Luego de ejecutar el algoritmo, obtenemos en tiempo polinomial el árbol de caminos de costo mínimo desde el origen especificado, en este caso, desde la casilla del robot en cuestión.
 
 
 
-Posteriormente se incluyeron algunas mejoras basadas en el estado del tablero, por ejemplo, en caso de no ser alcanzable una casilla del corral donde de positar a los bebés, en ese momento no tiene sentido buscar un camino que contenga bebés, así que se realiza un simple bfs hasta la suciedad más cercana.
+Posteriormente se incluyeron algunas mejoras basadas en el estado del tablero, por ejemplo, en caso de no ser alcanzable una casilla del corral donde de positar a los bebés, en ese momento no tiene sentido buscar un camino que contenga bebés, así que se realiza un simple bfs hasta la suciedad más cercana. Además, todos los robots mantienen un estado interno que les permite decidir qué deberían hacer, por ejemplo, en caso de estar cargando un bebé, dejarlo en el corral.
 
 
 
@@ -73,7 +77,7 @@ Los parámetros que se variaron en las simulaciones fueron:
 
 
 
-De los tres modelos de agentes implementados, luego de varias simulaciones con distintos parámetros para el ambiente, se obtuvo que casi siempre el mejor desempeño lo tenía el *goal-based agent* que utiliza el algoritmo de Dijkstra para encontrar el mejor camino. Para valores muy grandes de M y N, el agente *goal-based* que no utilizaba Dijkstra, sino un dfs, era extremadamente ineficiente, y para valores razonables tenía una eficacia parecida a su alternativa. Ambos *goal-based agents* tienen mejor desempeño que el agente reactivo para valores de t$\gg$1, sin embargo, cuando t=1 el agente reactivo era la gran mayoría de las veces el que mejor podía mantener el tablero libre de suciedad. De manera intuitiva, esto se puede explicar porque como las acciones de limpiar y depositar niños ocupan un turno completo para completarlas, la ventaja que se obtiene de escoger una estrategia aparentemente óptima, en lugar de rápida, se anula prácticamente; además, cada t unidades de tiempo se genera una pequeña cantidad(7%) de suciedad de manera aleatoria en el tablero.
+De los tres modelos de agentes implementados, luego de varias simulaciones con distintos parámetros para el ambiente, se obtuvo que casi siempre el mejor desempeño lo tenía el agente proactivo que utiliza el algoritmo de Dijkstra para encontrar el mejor camino. Para valores muy grandes de M y N, el agente proactivo que no utilizaba Dijkstra, sino un dfs, era extremadamente ineficiente, y para valores razonables tenía una eficacia parecida a su alternativa. Ambos agentes proactivos tienen mejor desempeño que el agente reactivo para valores de t$\gg$1, sin embargo, cuando t=1 el agente reactivo era la gran mayoría de las veces el que mejor podía mantener el tablero libre de suciedad. De manera intuitiva, esto se puede explicar porque como las acciones de limpiar y depositar niños ocupan un turno completo para completarlas, la ventaja que se obtiene de escoger una estrategia aparentemente óptima, en lugar de rápida, se anula prácticamente; además, cada t unidades de tiempo se genera una pequeña cantidad(7%) de suciedad de manera aleatoria en el tablero.
 
 
 
@@ -84,9 +88,9 @@ De los tres modelos de agentes implementados, luego de varias simulaciones con d
 Para ejecutar una simulación con el código provisto, se debe cargar el archivo Main.hs, el cual contiene las funciones principales de la simulación, entre ellas la función principal, **simulate**, que recibe como parámetros:
 
 * El tipo de agente a ejecutar: {"r", "m", "d"}
-  * "r" -> reactive
-  * "m" -> *goal-based* con dfs
-  * "d" -> *goal-based* con Dijkstra
+  * "r" -> reactivo
+  * "m" -> proactivo con dfs
+  * "d" -> proactivo con Dijkstra
 * M: la cantidad de filas del tablero
 * N: la cantidad de columnas del tablero
 * T: el valor de t para la cantidad de turnos que tienen los robots antes de que cambie el ambiente
@@ -95,7 +99,7 @@ Para ejecutar una simulación con el código provisto, se debe cargar el archivo
 
 Ejemplo:
 
-simulate "d" 8 10 5 80 42
+simulate "r" 8 10 5 80 42
 
 corre la simulación con un tablero de 8*10, donde un 7% serán bebés , 3% robots, 10% serán obstáculos, un la suciedad inicial rondará entre 40% y 80%, t=5, se ejecutarán 80 ciclos, y la seed para el programa es 42.
 
